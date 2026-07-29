@@ -536,14 +536,21 @@
     }
 
 
-    /* 모바일 계산 편의 기능 */
+    /* 클래스 선택과 계산 항목을 하나의 상단 제어 박스로 구성 */
+    .top-control-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+    }
     .view-mode-panel {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 12px;
-      padding: 12px 15px;
-      margin-bottom: 14px;
+      min-width: max-content;
+      padding-left: 18px;
+      border-left: 1px solid var(--line-soft);
     }
     .view-mode-title { font-size: 14px; font-weight: 900; white-space: nowrap; }
     .view-mode-options { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; }
@@ -601,6 +608,16 @@
       text-overflow: ellipsis;
     }
 
+    @media (max-width: 900px) {
+      .top-control-grid { grid-template-columns: 1fr; gap: 12px; }
+      .view-mode-panel {
+        justify-content: space-between;
+        min-width: 0;
+        padding: 12px 0 0;
+        border-left: 0;
+        border-top: 1px solid var(--line-soft);
+      }
+    }
     @media (max-width: 760px) {
       .view-mode-panel { align-items: flex-start; }
       .mobile-live-summary { display: grid; }
@@ -627,21 +644,23 @@
     </header>
 
     <section class="panel condition-panel">
-      <div class="class-condition">
-        <label class="class-select-box" for="classSelect">
-          <span class="class-select-label">클래스 선택</span>
-          <select class="class-select" id="classSelect" aria-label="클래스 선택"></select>
-        </label>
-        <div class="class-effect-options" id="classEffectOptions" aria-live="polite"></div>
-      </div>
-    </section>
+      <div class="top-control-grid">
+        <div class="class-condition">
+          <label class="class-select-box" for="classSelect">
+            <span class="class-select-label">클래스 선택</span>
+            <select class="class-select" id="classSelect" aria-label="클래스 선택"></select>
+          </label>
+          <div class="class-effect-options" id="classEffectOptions" aria-live="polite"></div>
+        </div>
 
-    <section class="panel view-mode-panel" aria-label="계산 항목 표시 선택">
-      <div class="view-mode-title">계산 항목</div>
-      <div class="view-mode-options">
-        <button type="button" class="view-mode-btn" data-view-mode="all">전체</button>
-        <button type="button" class="view-mode-btn" data-view-mode="crit">치명타</button>
-        <button type="button" class="view-mode-btn" data-view-mode="extra">추가타</button>
+        <div class="view-mode-panel" aria-label="계산 항목 표시 선택">
+          <div class="view-mode-title">계산 항목</div>
+          <div class="view-mode-options">
+            <button type="button" class="view-mode-btn" data-view-mode="all">전체</button>
+            <button type="button" class="view-mode-btn" data-view-mode="crit">치명타</button>
+            <button type="button" class="view-mode-btn" data-view-mode="extra">추가타</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1362,8 +1381,8 @@
       document.getElementById('critTotal').textContent = fmt(r.totalCrit);
       document.getElementById('extraTotal').textContent = fmt(r.totalExtra);
 
-      document.getElementById('summaryCritSub').textContent = `스탯 ${fmt(r.baseCrit)} + 룬 ${fmt(r.crit.base)}${r.classBonus.crit ? ` + 클래스 ${fmt(r.classBonus.crit)}` : ''}${r.critCondition ? ` + 조건부 ${fmt(r.critCondition)}` : ''}`;
-      document.getElementById('summaryExtraSub').textContent = `스탯 ${fmt(r.baseExtra)} + 룬 ${fmt(r.extra.base + r.classBonus.extra)}${r.classBonus.extra ? ` (클래스 ${fmt(r.classBonus.extra)} 포함)` : ''}${r.extraCondition ? ` + 조건부 ${fmt(r.extraCondition)}` : ''}`;
+      document.getElementById('summaryCritSub').textContent = `[스탯 ${fmt(r.baseCrit)} + 룬 ${fmt(r.crit.base)}${r.classBonus.crit ? ` + 클래스 ${fmt(r.classBonus.crit)}` : ''}${r.critCondition ? `] + 조건부 ${fmt(r.critCondition)}` : ''}`;
+      document.getElementById('summaryExtraSub').textContent = `[스탯 ${fmt(r.baseExtra)} + 룬 ${fmt(r.extra.base + r.classBonus.extra)}${r.classBonus.extra ? ` (클래스 ${fmt(r.classBonus.extra)} 포함)` : ''}${r.extraCondition ? `] + 조건부 ${fmt(r.extraCondition)}` : ''}`;
 
       if (activeId) {
         const restored = document.querySelector(`[data-id="${activeId}"]`);
