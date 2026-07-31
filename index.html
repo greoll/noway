@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>새 탭</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <div>
+          <h1>주간 업무 보고 자료</h1>
+          <p class="subtitle">by 그럴순없어</p>
+        </div>
+        <div class="top-actions">
+          <nav class="app-tabs" aria-label="페이지 선택">
+            <button
+              type="button"
+              class="app-tab active"
+              data-app-tab="calculator"
+              aria-selected="true"
+            >
+              계산기
+            </button>
+            <button
+              type="button"
+              class="app-tab"
+              data-app-tab="craft"
+              aria-selected="false"
+            >
+              제작
+            </button>
+            <button
+              type="button"
+              class="app-tab"
+              data-app-tab="guide"
+              aria-selected="false"
+            >
+              기타
+            </button>
+          </nav>
+          <button class="btn danger" id="resetAll">전체 초기화</button>
+        </div>
+      </header>
+
+      <div class="tab-page" id="calculatorPage">
+        <section class="panel condition-panel">
+          <div class="top-control-grid">
+            <div class="class-condition">
+              <label class="class-select-box" for="classSelect">
+                <span class="class-select-label">클래스 선택</span>
+                <select
+                  class="class-select"
+                  id="classSelect"
+                  aria-label="클래스 선택"
+                ></select>
+              </label>
+              <div
+                class="class-effect-options"
+                id="classEffectOptions"
+                aria-live="polite"
+              ></div>
+            </div>
+
+            <div class="view-mode-panel" aria-label="계산 항목 표시 선택">
+              <div class="view-mode-title">계산 항목</div>
+              <div class="view-mode-options">
+                <button
+                  type="button"
+                  class="view-mode-btn"
+                  data-view-mode="all"
+                >
+                  전체
+                </button>
+                <button
+                  type="button"
+                  class="view-mode-btn"
+                  data-view-mode="crit"
+                >
+                  치명타
+                </button>
+                <button
+                  type="button"
+                  class="view-mode-btn"
+                  data-view-mode="extra"
+                >
+                  추가타
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="summary-grid">
+          <article
+            class="panel summary-card"
+            id="critSummaryCard"
+            data-category-view="crit"
+          >
+            <div class="summary-label">치명타 확률</div>
+            <div class="summary-value" id="summaryCrit">0.00%</div>
+            <div class="summary-condition" id="summaryCritCondition"></div>
+            <div class="summary-sub" id="summaryCritSub">기본 0.00%</div>
+          </article>
+          <article
+            class="panel summary-card"
+            id="extraSummaryCard"
+            data-category-view="extra"
+          >
+            <div class="summary-label">추가타 확률</div>
+            <div class="summary-value" id="summaryExtra">0.00%</div>
+            <div class="summary-condition" id="summaryExtraCondition"></div>
+            <div class="summary-sub" id="summaryExtraSub">스탯 × 선택 항목</div>
+          </article>
+        </section>
+
+        <section class="columns">
+          <article
+            class="panel category"
+            id="critCategory"
+            data-category-view="crit"
+          >
+            <div class="category-head">
+              <h2>💥 치명타 확률</h2>
+              <p>
+                스탯·아티팩트·시즌1룬·시즌2룬과 위에서 선택한 클래스 효과를
+                합산합니다.
+              </p>
+            </div>
+            <div class="table-head">
+              <span></span><span>항목</span><span>기본</span><span>조건</span>
+            </div>
+            <div id="critList"></div>
+            <div class="total-row">
+              <span>치명타 확률 총합</span><strong id="critTotal">0.00%</strong>
+            </div>
+          </article>
+
+          <article
+            class="panel category"
+            id="extraCategory"
+            data-category-view="extra"
+          >
+            <div class="category-head">
+              <h2>💫 추가타 확률</h2>
+              <p>
+                스탯·아티팩트·시즌1룬·시즌2룬과 위에서 선택한 클래스 효과를 함께
+                계산합니다.
+              </p>
+            </div>
+            <div class="table-head">
+              <span></span><span>항목</span><span>기본</span><span>조건</span>
+            </div>
+            <div id="extraList"></div>
+            <div class="total-row">
+              <span>추가타 확률 총합</span
+              ><strong id="extraTotal">0.00%</strong>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel details-panel">
+          <details>
+            <summary>계산 과정 보기</summary>
+            <div class="detail-body" id="calculationDetail"></div>
+          </details>
+          <details>
+            <summary>적용 공식 보기</summary>
+            <div class="detail-body">
+              <code
+                >치명타 확률 = 스탯 기본값 + 일반 선택 항목 + 선택한 클래스 효과
+                + 활성화된 조건값 추가타 확률 = ((1 + 스탯 기본값 ÷ 100) × (1 +
+                (일반 선택 항목 + 선택한 클래스 효과) ÷ 100) − 1) × 100 +
+                활성화된 조건값</code
+              >
+            </div>
+          </details>
+        </section>
+
+        <div class="note">선택값은 현재 브라우저에 자동 저장됩니다.</div>
+
+        <aside
+          class="mobile-live-summary"
+          id="mobileLiveSummary"
+          aria-label="현재 계산 결과"
+        >
+          <div class="mobile-live-item" data-live-category="crit">
+            <span class="mobile-live-label">치명타</span>
+            <span class="mobile-live-value" id="mobileCritValue">0.00%</span>
+          </div>
+          <div class="mobile-live-item" data-live-category="extra">
+            <span class="mobile-live-label">추가타</span>
+            <span class="mobile-live-value" id="mobileExtraValue">0.00%</span>
+          </div>
+        </aside>
+      </div>
+
+      <section class="tab-page guide-page" id="guidePage" hidden>
+        <nav class="misc-subtabs" aria-label="기타 정보 선택">
+          <button
+            type="button"
+            class="misc-subtab active"
+            data-misc-tab="stats"
+            aria-selected="true"
+          >
+            스탯 설명서
+          </button>
+          <button
+            type="button"
+            class="misc-subtab"
+            data-misc-tab="resistance"
+            aria-selected="false"
+          >
+            마도저항 가이드
+          </button>
+          <button
+            type="button"
+            class="misc-subtab"
+            data-misc-tab="season"
+            aria-selected="false"
+          >
+            시즌 레벨
+          </button>
+          <button
+            type="button"
+            class="misc-subtab"
+            data-misc-tab="enchant"
+            aria-selected="false"
+          >
+            인챈트 정보
+          </button>
+        </nav>
+
+        <div id="miscStatsPage">
+          <p class="guide-intro">
+            각 스탯이 전투에 적용되는 효과를 확인할 수 있습니다.
+          </p>
+          <p class="integer-stat-note">
+            아래 수치는 상위 스탯 1당 상승량입니다. 게임 내 스탯 수치는 소수점
+            없이 정수로 표시됩니다.
+          </p>
+          <div class="stat-guide-grid">
+            <article class="stat-group strength">
+              <div class="stat-group-head">
+                <span class="stat-group-symbol" aria-hidden="true">✊</span>
+                <h2>힘</h2>
+              </div>
+              <dl class="stat-guide-list">
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">⚔</span
+                    >브레이크
+                  </dt>
+                  <dd>
+                    <span class="stat-effect"
+                      >브레이크 피해량 증가, 무방비 대상에게 입히는 피해
+                      증가</span
+                    ><span class="stat-ratio">힘 1당 +0.25</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">➤</span
+                    >강타 강화
+                  </dt>
+                  <dd>
+                    <span class="stat-effect"
+                      >강타 피해량 증가, 분노 대상에게 더 큰 강타 피해</span
+                    ><span class="stat-ratio">힘 1당 +0.25</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">⬡</span
+                    >피해 감소
+                  </dt>
+                  <dd>
+                    <span class="stat-effect">입는 피해 감소</span
+                    ><span class="stat-ratio">힘 1당 +0.25</span>
+                  </dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="stat-group dexterity">
+              <div class="stat-group-head">
+                <span class="stat-group-symbol" aria-hidden="true">🤲</span>
+                <h2>솜씨</h2>
+              </div>
+              <dl class="stat-guide-list">
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">↯</span
+                    >연타 강화
+                  </dt>
+                  <dd>
+                    <span class="stat-effect"
+                      >연타 피해량 증가, 카운터 대상에게 더 큰 연타 피해</span
+                    ><span class="stat-ratio">솜씨 1당 +0.25</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">◒</span
+                    >콤보 강화
+                  </dt>
+                  <dd>
+                    <span class="stat-effect">콤보 피해량 증가</span
+                    ><span class="stat-ratio">솜씨 1당 +0.25</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">➶</span
+                    >빠른 공격
+                  </dt>
+                  <dd>
+                    <span class="stat-effect">기본 공격 속도 증가</span
+                    ><span class="stat-ratio">솜씨 1당 +0.25</span>
+                  </dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="stat-group intelligence">
+              <div class="stat-group-head">
+                <span class="stat-group-symbol" aria-hidden="true">🧠</span>
+                <h2>지력</h2>
+              </div>
+              <dl class="stat-guide-list">
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">◎</span
+                    >광역 강화
+                  </dt>
+                  <dd>
+                    <span class="stat-effect">멀티 히트 피해량 증가</span
+                    ><span class="stat-ratio">지력 1당 +0.25</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">✦</span
+                    >스킬 위력
+                  </dt>
+                  <dd>
+                    <span class="stat-effect">스킬 피해량 증가</span
+                    ><span class="stat-ratio">지력 1당 +0.25</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">➹</span
+                    >빠른 스킬
+                  </dt>
+                  <dd>
+                    <span class="stat-effect"
+                      >스킬 캐스팅 및 차지 속도와 사용 속도 증가</span
+                    ><span class="stat-ratio">지력 1당 +0.25</span>
+                  </dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="stat-group luck">
+              <div class="stat-group-head">
+                <span class="stat-group-symbol" aria-hidden="true">☘</span>
+                <h2>행운</h2>
+              </div>
+              <dl class="stat-guide-list">
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">✹</span
+                    >치명타
+                  </dt>
+                  <dd>
+                    <span class="stat-effect"
+                      >치명타 발생 확률과 피해량 증가</span
+                    ><span class="stat-ratio">행운 1당 +0.25</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">✧</span
+                    >추가타
+                  </dt>
+                  <dd>
+                    <span class="stat-effect">추가로 피해를 입힐 확률 증가</span
+                    ><span class="stat-ratio">행운 1당 +0.25</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">🏃</span
+                    >급소 회피
+                  </dt>
+                  <dd>
+                    <span class="stat-effect">입는 피해가 경감될 확률 증가</span
+                    ><span class="stat-ratio">행운 1당 +0.06</span>
+                  </dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="stat-group will">
+              <div class="stat-group-head">
+                <span class="stat-group-symbol" aria-hidden="true">♨</span>
+                <h2>의지</h2>
+              </div>
+              <dl class="stat-guide-list">
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">♥</span
+                    >추가 체력
+                  </dt>
+                  <dd>
+                    <span class="stat-effect">체력이 추가로 증가</span
+                    ><span class="stat-ratio">의지 1당 +0.78</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">✚</span
+                    >회복력
+                  </dt>
+                  <dd>
+                    <span class="stat-effect">스킬 및 소모품의 회복량 증가</span
+                    ><span class="stat-ratio">의지 1당 +0.25</span>
+                  </dd>
+                </div>
+                <div class="stat-guide-item">
+                  <dt>
+                    <span class="stat-item-symbol" aria-hidden="true">◉</span
+                    >궁극기
+                  </dt>
+                  <dd>
+                    <span class="stat-effect"
+                      >궁극기 피해량 증가, 궁극기 자원을 더 많이 획득</span
+                    ><span class="stat-ratio">의지 1당 +0.25</span>
+                  </dd>
+                </div>
+              </dl>
+            </article>
+          </div>
+        </div>
+
+        <div id="miscResistancePage" hidden>
+          <p class="guide-intro">
+            어비스 진입에 필요한 전투력·마도저항 기준과 장비별 마도저항 범위를
+            확인할 수 있습니다.
+          </p>
+
+          <section class="resistance-section">
+            <div class="resistance-section-head">
+              <div>
+                <span class="resistance-eyebrow">어비스</span>
+                <h2>진입 기준</h2>
+              </div>
+              <span class="resistance-caption">필요 · 권장 · 압도 비교</span>
+            </div>
+            <div class="abyss-requirement-grid">
+              <article class="abyss-difficulty-card">
+                <div class="abyss-card-head">
+                  <h3>매우 어려움</h3>
+                  <span>매어</span>
+                </div>
+                <div class="requirement-block">
+                  <h4>전투력</h4>
+                  <dl>
+                    <div>
+                      <dt>필요</dt>
+                      <dd>76,000</dd>
+                    </div>
+                    <div class="recommended">
+                      <dt>권장</dt>
+                      <dd>80,000</dd>
+                    </div>
+                    <div>
+                      <dt>압도</dt>
+                      <dd>92,000</dd>
+                    </div>
+                  </dl>
+                </div>
+                <div class="requirement-block magic">
+                  <h4>마도저항</h4>
+                  <dl>
+                    <div>
+                      <dt>필요</dt>
+                      <dd>2,200</dd>
+                    </div>
+                    <div class="recommended">
+                      <dt>권장</dt>
+                      <dd>2,700</dd>
+                    </div>
+                  </dl>
+                </div>
+              </article>
+
+              <article class="abyss-difficulty-card hell">
+                <div class="abyss-card-head">
+                  <h3>지옥 1</h3>
+                  <span>지옥1</span>
+                </div>
+                <div class="requirement-block">
+                  <h4>전투력</h4>
+                  <dl>
+                    <div>
+                      <dt>필요</dt>
+                      <dd>87,500</dd>
+                    </div>
+                    <div class="recommended">
+                      <dt>권장</dt>
+                      <dd>92,000</dd>
+                    </div>
+                    <div>
+                      <dt>압도</dt>
+                      <dd>105,000</dd>
+                    </div>
+                  </dl>
+                </div>
+                <div class="requirement-block magic">
+                  <h4>마도저항</h4>
+                  <dl>
+                    <div>
+                      <dt>필요</dt>
+                      <dd>3,500</dd>
+                    </div>
+                    <div class="recommended">
+                      <dt>권장</dt>
+                      <dd>4,400</dd>
+                    </div>
+                  </dl>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="resistance-section">
+            <div class="resistance-section-head">
+              <div>
+                <span class="resistance-eyebrow">장비 비교</span>
+                <h2>부위별 마도저항 범위</h2>
+              </div>
+              <span class="resistance-caption">잔영 · 해연 장비</span>
+            </div>
+            <div class="resistance-table-wrap">
+              <table class="resistance-table">
+                <thead>
+                  <tr>
+                    <th scope="col">구분</th>
+                    <th scope="col">잔영 마도저항</th>
+                    <th scope="col">해연 마도저항</th>
+                    <th scope="col">공격력/방어력</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">무기</th>
+                    <td>280~840</td>
+                    <td>840~1,400</td>
+                    <td>3,594~3,983</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">목걸이</th>
+                    <td>140~420</td>
+                    <td>420~700</td>
+                    <td>540~599</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">반지</th>
+                    <td>140~420</td>
+                    <td>420~700</td>
+                    <td>485~537</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">방어구</th>
+                    <td>140~420</td>
+                    <td>420~700</td>
+                    <td>921~1,021</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div id="miscSeasonPage" hidden>
+          <p class="guide-intro">
+            콘텐츠별 시즌 경험치 획득량과 다음 시즌 레벨까지 필요한 경험치를
+            확인할 수 있습니다.
+          </p>
+
+          <section class="season-section">
+            <div class="resistance-section-head">
+              <div>
+                <span class="season-eyebrow">획득 경험치</span>
+                <h2>콘텐츠별 획득량</h2>
+              </div>
+              <span class="resistance-caption">1회 완료 기준</span>
+            </div>
+            <div class="season-exp-groups">
+              <section class="season-exp-group">
+                <h3>재화 미사용</h3>
+                <div class="season-content-grid no-currency">
+                  <article class="season-exp-card primary-exp-source">
+                    <span>심층 던전</span>
+                    <strong>250</strong>
+                    <small>어려움/매우어려움 동일</small>
+                  </article>
+                </div>
+              </section>
+              <section class="season-exp-group">
+                <h3>재화 사용 시</h3>
+                <div class="season-content-grid currency">
+                  <article class="season-exp-card">
+                    <span>일반 던전</span>
+                    <strong>100</strong>
+                    <small>은동전 사용</small>
+                  </article>
+                  <article class="season-exp-card offering">
+                    <span>심층 어려움</span>
+                    <strong>500</strong>
+                    <small>공물 1개 사용</small>
+                  </article>
+                  <article class="season-exp-card offering">
+                    <span>심층 매우어려움</span>
+                    <strong>750</strong>
+                    <small>공물 2개 사용</small>
+                  </article>
+                </div>
+              </section>
+              <section class="season-exp-group">
+                <h3>어비스·레이드</h3>
+                <div class="season-content-grid raid">
+                  <article class="season-exp-card">
+                    <span>어비스 3종</span>
+                    <strong>600</strong>
+                    <small>각 200</small>
+                  </article>
+                  <article class="season-exp-card">
+                    <span>카브락</span>
+                    <strong>300</strong>
+                  </article>
+                  <article class="season-exp-card">
+                    <span>에이렐</span>
+                    <strong>200</strong>
+                  </article>
+                  <article class="season-exp-card">
+                    <span>화이트 서큐버스</span>
+                    <strong>200</strong>
+                  </article>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="season-section">
+            <div class="resistance-section-head season-level-section-head">
+              <div>
+                <span class="season-eyebrow">레벨업 정보</span>
+                <h2>시즌 레벨별 필요 경험치</h2>
+              </div>
+              <div class="season-goal-calculator">
+                <label>
+                  <span>현재</span>
+                  <input
+                    type="number"
+                    id="seasonCurrentLevel"
+                    min="1"
+                    max="149"
+                    value="30"
+                    inputmode="numeric"
+                  />
+                </label>
+                <span class="season-goal-arrow">→</span>
+                <label>
+                  <span>목표</span>
+                  <input
+                    type="number"
+                    id="seasonTargetLevel"
+                    min="2"
+                    max="150"
+                    value="45"
+                    inputmode="numeric"
+                  />
+                </label>
+                <div class="season-goal-result">
+                  <span>심층 <strong id="seasonGoalRuns">-</strong>판</span>
+                </div>
+              </div>
+            </div>
+            <div class="season-level-controls">
+              <button
+                type="button"
+                id="seasonLevelPrev"
+                aria-label="이전 레벨 구간"
+              >
+                이전
+              </button>
+              <div
+                class="season-range-buttons"
+                id="seasonRangeButtons"
+                aria-label="시즌 레벨 구간 선택"
+              ></div>
+              <button
+                type="button"
+                id="seasonLevelNext"
+                aria-label="다음 레벨 구간"
+              >
+                다음
+              </button>
+            </div>
+            <p class="season-daily-definition">
+              <strong>일일 숙제 기준</strong>
+              일반던전 4회(400) + 심층 어려움 2회(1,000) 또는 심층 매어 1회(750)
+            </p>
+            <div class="season-level-table-wrap">
+              <table class="season-level-table">
+                <thead>
+                  <tr>
+                    <th scope="col">시즌 레벨</th>
+                    <th scope="col">필요 경험치</th>
+                    <th scope="col">심층 던전(공물X)</th>
+                    <th scope="col">일일 숙제만 진행 시</th>
+                  </tr>
+                </thead>
+                <tbody id="seasonLevelRows"></tbody>
+              </table>
+            </div>
+            <p class="season-formula-note">
+              제공된 경험치 증가 패턴을 1레벨부터 적용하여 150레벨까지 계산한
+              값입니다. 필요 판수는 심층 어려움(공물X)의 1회 경험치 250을
+              기준으로 계산합니다. 예상 소요일은 일일 기본 획득량 1,150~1,400을
+              기준으로 한 범위입니다.
+            </p>
+          </section>
+        </div>
+
+        <div id="miscEnchantPage" hidden>
+          <p class="guide-intro">
+            착용 부위별 인챈트의 공격력과 추가 효과를 검색할 수 있습니다.
+          </p>
+          <section class="enchant-section">
+            <div class="enchant-controls">
+              <label class="enchant-search">
+                <span class="sr-only">인챈트 검색</span>
+                <input
+                  type="search"
+                  id="enchantSearch"
+                  placeholder="인챈트 이름 또는 효과 검색"
+                  autocomplete="off"
+                />
+              </label>
+              <div
+                class="enchant-slot-filters"
+                id="enchantSlotFilters"
+                aria-label="착용 부위 선택"
+              ></div>
+              <span class="enchant-count" id="enchantCount"></span>
+            </div>
+            <div class="enchant-effect-toolbar">
+              <span class="enchant-effect-label">효과 필터</span>
+              <div id="enchantEffectFilters"></div>
+              <small>복수 선택 시 선택한 효과를 모두 포함</small>
+            </div>
+            <div class="enchant-list" id="enchantList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-page craft-page" id="craftPage" hidden>
+        <p class="guide-intro">
+          착용 부위별 제작 재료와 재료의 수급처를 확인할 수 있습니다.
+        </p>
+        <div class="craft-view-switch" aria-label="제작 정보 기준">
+          <button
+            type="button"
+            class="craft-view-button active"
+            data-craft-view="equipment"
+            aria-pressed="true"
+          >
+            장비 기준
+          </button>
+          <button
+            type="button"
+            class="craft-view-button"
+            data-craft-view="material"
+            aria-pressed="false"
+          >
+            재료 기준
+          </button>
+        </div>
+        <div class="craft-layout" id="craftCatalog">
+          <aside class="craft-list-panel">
+            <label class="craft-class-box" for="craftClassSelect">
+              <span>클래스 선택</span>
+              <select class="craft-class-select" id="craftClassSelect"></select>
+            </label>
+            <p class="craft-recommend-note" id="craftRecommendNote" hidden></p>
+            <h2 class="craft-section-title">착용 부위</h2>
+            <div
+              class="craft-part-filter"
+              id="craftFilters"
+              aria-label="착용 부위 필터"
+            ></div>
+            <h2 class="craft-section-title">
+              제작 아이템 <span id="craftItemCount"></span>
+            </h2>
+            <div class="craft-catalog-list" id="craftItemList"></div>
+          </aside>
+          <article class="craft-detail-panel" id="craftDetail"></article>
+        </div>
+        <div class="craft-layout" id="craftMaterialCatalog" hidden>
+          <aside class="craft-list-panel">
+            <h2 class="craft-section-title">수급처 분류</h2>
+            <div
+              class="craft-part-filter"
+              id="craftMaterialFilters"
+              aria-label="재료 수급처 분류"
+            ></div>
+            <h2 class="craft-section-title">
+              제작 재료 <span id="craftMaterialCount"></span>
+            </h2>
+            <div class="craft-catalog-list" id="craftMaterialList"></div>
+          </aside>
+          <article
+            class="craft-detail-panel"
+            id="craftMaterialDetail"
+          ></article>
+        </div>
+      </section>
+    </main>
+
+    <script src="./js/crafting-data.js" defer></script>
+    <script src="./js/crafting.js" defer></script>
+    <script src="./js/enchant-data.js" defer></script>
+    <script src="./js/enchant.js" defer></script>
+    <script src="./js/misc.js" defer></script>
+    <script src="./js/calculator-data.js" defer></script>
+    <script src="./js/calculator.js" defer></script>
+  </body>
+</html>
