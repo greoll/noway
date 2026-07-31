@@ -1,2 +1,2 @@
-# mabinogi-calculator
+# calculator
 by 그럴순없어
