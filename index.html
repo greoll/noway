@@ -26,10 +26,34 @@
             <button
               type="button"
               class="app-tab"
+              data-app-tab="setup"
+              aria-selected="false"
+            >
+              세팅 분석
+            </button>
+            <button
+              type="button"
+              class="app-tab"
+              data-app-tab="rune"
+              aria-selected="false"
+            >
+              룬 계산기
+            </button>
+            <button
+              type="button"
+              class="app-tab"
               data-app-tab="craft"
               aria-selected="false"
             >
               제작
+            </button>
+            <button
+              type="button"
+              class="app-tab"
+              data-app-tab="scrollcraft"
+              aria-selected="false"
+            >
+              스크롤 제작
             </button>
             <button
               type="button"
@@ -113,6 +137,21 @@
             <div class="summary-condition" id="summaryExtraCondition"></div>
             <div class="summary-sub" id="summaryExtraSub">스탯 × 선택 항목</div>
           </article>
+          <article class="panel summary-card" data-category-view="crit">
+            <div class="summary-label">치명타 피해</div>
+            <div class="summary-value" id="summaryDamage">140.00%</div>
+            <div class="summary-condition" id="summaryDamageCondition"></div>
+            <div class="summary-sub" id="summaryDamageSub">기본 140.00%</div>
+          </article>
+          <article class="panel summary-card" data-category-view="crit">
+            <div class="summary-label">치명타 최종 효율</div>
+            <div class="summary-value" id="summaryEfficiency">100.00%</div>
+            <div
+              class="summary-condition"
+              id="summaryEfficiencyCondition"
+            ></div>
+            <div class="summary-sub">치명타 확률 100% 상한 적용</div>
+          </article>
         </section>
 
         <section class="columns">
@@ -122,10 +161,9 @@
             data-category-view="crit"
           >
             <div class="category-head">
-              <h2>💥 치명타 확률</h2>
+              <h2>🎯 치명타 확률</h2>
               <p>
-                스탯·아티팩트·시즌1룬·시즌2룬과 위에서 선택한 클래스 효과를
-                합산합니다.
+                스탯·아티팩트·시즌2룬과 위에서 선택한 클래스 효과를 합산합니다.
               </p>
             </div>
             <div class="table-head">
@@ -143,9 +181,9 @@
             data-category-view="extra"
           >
             <div class="category-head">
-              <h2>💫 추가타 확률</h2>
+              <h2>⚡ 추가타 확률</h2>
               <p>
-                스탯·아티팩트·시즌1룬·시즌2룬과 위에서 선택한 클래스 효과를 함께
+                스탯·아티팩트·시즌2룬과 위에서 선택한 클래스 효과를 함께
                 계산합니다.
               </p>
             </div>
@@ -156,6 +194,21 @@
             <div class="total-row">
               <span>추가타 확률 총합</span
               ><strong id="extraTotal">0.00%</strong>
+            </div>
+          </article>
+
+          <article class="panel category" data-category-view="crit">
+            <div class="category-head">
+              <h2>💥 치명타 피해</h2>
+              <p>제공된 시즌2 링크의 항목과 곱연산 공식을 유지합니다.</p>
+            </div>
+            <div class="table-head">
+              <span></span><span>항목</span><span>기본</span><span></span>
+            </div>
+            <div id="damageList"></div>
+            <div class="total-row">
+              <span>치명타 피해 총합</span
+              ><strong id="damageTotal">140.00%</strong>
             </div>
           </article>
         </section>
@@ -170,9 +223,11 @@
             <div class="detail-body">
               <code
                 >치명타 확률 = 스탯 기본값 + 일반 선택 항목 + 선택한 클래스 효과
-                + 활성화된 조건값 추가타 확률 = ((1 + 스탯 기본값 ÷ 100) × (1 +
-                (일반 선택 항목 + 선택한 클래스 효과) ÷ 100) − 1) × 100 +
-                활성화된 조건값</code
+                + 활성화된 조건값 치명타 피해 = 스탯 기본 피해 × (1 + (일반 선택
+                항목 + 선택한 클래스 효과) ÷ 100) 추가타 확률 = ((1 + 스탯
+                기본값 ÷ 100) × (1 + (일반 선택 항목 + 선택한 클래스 효과) ÷
+                100) − 1) × 100 + 활성화된 조건값 최종 효율 = (1 + MIN(치명타
+                확률, 100) ÷ 100 × (치명타 피해 ÷ 100 − 1)) × 100</code
               >
             </div>
           </details>
@@ -193,8 +248,94 @@
             <span class="mobile-live-label">추가타</span>
             <span class="mobile-live-value" id="mobileExtraValue">0.00%</span>
           </div>
+          <div class="mobile-live-item" data-live-category="crit">
+            <span class="mobile-live-label">치명타 피해</span>
+            <span class="mobile-live-value" id="mobileDamageValue"
+              >140.00%</span
+            >
+          </div>
+          <div class="mobile-live-item" data-live-category="crit">
+            <span class="mobile-live-label">최종 효율</span>
+            <span class="mobile-live-value" id="mobileEfficiencyValue"
+              >100.00%</span
+            >
+          </div>
         </aside>
       </div>
+
+      <section class="tab-page scroll-craft-page" id="scrollCraftPage" hidden>
+        <div class="scroll-craft-intro">
+          <div>
+            <h2>스크롤 제작 계산</h2>
+            <p>
+              <b>노란 칸만 입력</b>하면 제작 수량과 필요 재료가 자동 계산됩니다.
+            </p>
+          </div>
+          <div class="scroll-craft-scope" aria-label="계산 범위 선택">
+            <div class="scroll-craft-scope-buttons">
+              <button
+                type="button"
+                data-scroll-scope="single"
+                aria-pressed="false"
+              >
+                단일 캐릭터
+              </button>
+              <button
+                type="button"
+                data-scroll-scope="all"
+                class="active"
+                aria-pressed="true"
+              >
+                6캐릭터 전체
+              </button>
+            </div>
+            <label id="scrollCraftClassBox" hidden
+              ><span>캐릭터</span
+              ><select
+                id="scrollCraftClassSelect"
+                aria-label="단일 캐릭터 클래스 선택"
+              ></select
+            ></label>
+          </div>
+        </div>
+
+        <section class="scroll-craft-panel scroll-plan-panel">
+          <div class="scroll-craft-panel-head">
+            <div>
+              <span>01</span>
+              <h3>스크롤 개수 입력</h3>
+            </div>
+            <div
+              class="scroll-plan-sort"
+              id="scrollPlanSort"
+              aria-label="제작품 정렬 기준"
+            ></div>
+          </div>
+          <div class="scroll-craft-table-wrap">
+            <table class="scroll-craft-table plan-table">
+              <thead id="scrollCraftPlanHead"></thead>
+              <tbody id="scrollCraftPlanBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="scroll-craft-panel scroll-material-panel">
+          <div class="scroll-craft-panel-head">
+            <div>
+              <span>02</span>
+              <h3>전체 재료 집계</h3>
+            </div>
+          </div>
+          <div class="scroll-craft-table-wrap">
+            <table class="scroll-craft-table material-table">
+              <thead>
+                <tr id="scrollCraftMaterialHead"></tr>
+              </thead>
+              <tbody id="scrollCraftMaterialGrid"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
 
       <section class="tab-page guide-page" id="guidePage" hidden>
         <nav class="misc-subtabs" aria-label="기타 정보 선택">
@@ -229,6 +370,14 @@
             aria-selected="false"
           >
             인챈트 정보
+          </button>
+          <button
+            type="button"
+            class="misc-subtab"
+            data-misc-tab="calendar"
+            aria-selected="false"
+          >
+            캘린더
           </button>
         </nav>
 
@@ -583,6 +732,96 @@
               </table>
             </div>
           </section>
+
+          <section class="resistance-section echo-item-guide">
+            <div class="resistance-section-head">
+              <div>
+                <span class="resistance-eyebrow">장비 관리</span>
+                <h2>잔영 아이템 처리 방법</h2>
+              </div>
+              <span class="resistance-caption">감정 · 성능 개선 판단 기준</span>
+            </div>
+
+            <div class="echo-guide-table-wrap">
+              <table class="echo-guide-table">
+                <tbody>
+                  <tr>
+                    <th>거래소 판매</th>
+                    <td colspan="4">
+                      <strong class="echo-caution">주의</strong>: 최근 잔영
+                      아이템은 거래가 활발하지 않음
+                    </td>
+                  </tr>
+                  <tr>
+                    <th rowspan="5">직접 사용</th>
+                    <th rowspan="2">
+                      해연 미적용 부위
+                      <small>마도저항 상승 + 성능 개선</small>
+                    </th>
+                    <th>무기 · 방어구 · 목걸이</th>
+                    <td colspan="2">
+                      클래스(중갑/경갑/천옷 등)와 동일하면 감정 후 사용 가능
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>반지</th>
+                    <td colspan="2">
+                      <span class="echo-ring-process"
+                        >반지 1개 해연 작업 → 이후 획득한 잔영 반지 감정</span
+                      >
+                      <strong class="echo-ring-result"
+                        ><i>→</i> 반지 2개 모두 [해연 최소/잔영 최대
+                        수치(420)]로 개선 가능</strong
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <th rowspan="3">
+                      해연 적용 부위
+                      <small>마도저항 관계X</small>
+                      <small>→단순 성능개선</small>
+                    </th>
+                    <th>무기 · 장신구</th>
+                    <td colspan="2">바로 감정 후 성능 개선</td>
+                  </tr>
+                  <tr>
+                    <th rowspan="2">
+                      방어구
+                      <small>(중갑/경갑/천옷 구분)</small>
+                    </th>
+                    <th>
+                      클래스와 동일하지 않은 경우
+                      <small>(감정 → 다이스 열기)</small>
+                    </th>
+                    <td>바로 감정 후 가진 방어구 부위 중 최고 수치로 보류</td>
+                  </tr>
+                  <tr>
+                    <th>
+                      클래스와 동일한 경우
+                      <small>(다이스 사용 → 감정)</small>
+                    </th>
+                    <td>
+                      <strong>성능 개선을 위한 사전 작업 후 감정</strong>
+                      <small class="echo-table-example">
+                        <b>예시) 천옷 클래스 잔영(미감정) 획득 시</b>
+                        <span
+                          ><b>1)</b> 다이스 작업 후 [중갑/경갑]이 최고 수치인
+                          경우 천옷 잔영 감정</span
+                        >
+                        <strong class="echo-example-result"
+                          >→ 천옷을 최고 수치로 만든 후 성능 개선</strong
+                        >
+                        <span
+                          ><b>2)</b> 다이스 작업 후 [천옷]이 최고 수치인 경우
+                          <b>보류</b></span
+                        >
+                      </small>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
 
         <div id="miscSeasonPage" hidden>
@@ -597,7 +836,7 @@
                 <span class="season-eyebrow">획득 경험치</span>
                 <h2>콘텐츠별 획득량</h2>
               </div>
-              <span class="resistance-caption">1회 완료 기준</span>
+              <span class="resistance-caption">주간 첫 클리어 / 반복</span>
             </div>
             <div class="season-exp-groups">
               <section class="season-exp-group">
@@ -631,24 +870,27 @@
                 </div>
               </section>
               <section class="season-exp-group">
-                <h3>어비스·레이드</h3>
+                <h3>어비스·레이드(주간 첫 클리어/반복)</h3>
                 <div class="season-content-grid raid">
                   <article class="season-exp-card">
-                    <span>어비스 3종</span>
-                    <strong>600</strong>
-                    <small>각 200</small>
+                    <span>[어비스] 3종</span>
+                    <strong>1,200 / 600</strong>
+                    <small>각 400 / 200</small>
                   </article>
                   <article class="season-exp-card">
-                    <span>카브락</span>
-                    <strong>300</strong>
+                    <span>[레이드]카브락</span>
+                    <strong>600 / 300</strong>
+                    <small>클리어 / 반복</small>
                   </article>
                   <article class="season-exp-card">
-                    <span>에이렐</span>
-                    <strong>200</strong>
+                    <span>[레이드]에이렐</span>
+                    <strong>400 / 200</strong>
+                    <small>클리어 / 반복</small>
                   </article>
                   <article class="season-exp-card">
-                    <span>화이트 서큐버스</span>
-                    <strong>200</strong>
+                    <span>[레이드]화이트 서큐버스</span>
+                    <strong>400 / 200</strong>
+                    <small>클리어 / 반복</small>
                   </article>
                 </div>
               </section>
@@ -767,6 +1009,310 @@
             <div class="enchant-list" id="enchantList"></div>
           </section>
         </div>
+
+        <div id="miscCalendarPage" hidden>
+          <p class="guide-intro">
+            캘린더에 표시할 정보와 계산 기능을 선택할 수 있습니다.
+          </p>
+          <div class="calendar-workspace">
+            <section class="season-week-planner calendar-week-planner">
+              <div class="calendar-module-title">
+                <div>
+                  <span id="calendarViewEyebrow">월간 보기</span>
+                  <strong>캘린더</strong>
+                </div>
+                <div class="calendar-view-switch" aria-label="캘린더 보기 방식">
+                  <button type="button" data-calendar-view="week">주간</button>
+                  <button
+                    type="button"
+                    data-calendar-view="month"
+                    class="active"
+                  >
+                    월간
+                  </button>
+                </div>
+              </div>
+              <div class="season-calendar-nav">
+                <button
+                  type="button"
+                  id="seasonCalendarPrev"
+                  aria-label="이전 달"
+                >
+                  ‹
+                </button>
+                <strong id="seasonCalendarTitle"></strong>
+                <button
+                  type="button"
+                  id="seasonCalendarNext"
+                  aria-label="다음 달"
+                >
+                  ›
+                </button>
+              </div>
+              <div class="season-calendar-scroll">
+                <div
+                  class="season-calendar-weekdays"
+                  id="seasonCalendarWeekdays"
+                  aria-hidden="true"
+                >
+                  <span>일</span><span>월</span><span>화</span><span>수</span>
+                  <span>목</span><span>금</span><span>토</span>
+                </div>
+                <div class="season-calendar-days" id="seasonCalendarDays"></div>
+              </div>
+            </section>
+
+            <aside class="calendar-sidebar" aria-label="캘린더 표시 설정">
+              <div class="calendar-sidebar-head">
+                <strong>표시 항목</strong>
+                <small>캘린더에 표시할 정보를 선택하세요.</small>
+              </div>
+              <div class="calendar-feature-selector">
+                <label>
+                  <input type="checkbox" id="calendarFeatureSeason" checked />
+                  <span>시즌 레벨</span>
+                </label>
+              </div>
+              <details
+                class="calendar-module-settings"
+                id="calendarSeasonModule"
+                open
+              >
+                <summary>세부 설정</summary>
+                <div class="season-week-planner-head">
+                  <label class="season-week-start">
+                    <span>금주 목표 레벨</span>
+                    <input
+                      type="number"
+                      id="seasonWeekTargetLevel"
+                      min="1"
+                      max="150"
+                      value="55"
+                      inputmode="numeric"
+                    />
+                  </label>
+                  <div class="season-week-options">
+                    <label>
+                      <input type="checkbox" id="seasonWeeklyClear" checked />
+                      <span>주간 어비스/레이드 클리어 <b>2,600</b></span>
+                    </label>
+                    <label>
+                      <input type="checkbox" id="seasonWeekendRepeat" checked />
+                      <span>주말 어비스/레이드 반복 클리어 <b>800</b></span>
+                    </label>
+                    <label>
+                      <input type="checkbox" id="seasonWeekendCombined" />
+                      <span>주말에 동시 진행 시 <b>2,600</b></span>
+                    </label>
+                    <label>
+                      <input type="checkbox" id="seasonFriendshipBagWork" />
+                      <span>우정주머니(어비스 매어 6회 기준) <b>1,200</b></span>
+                    </label>
+                  </div>
+                </div>
+                <p
+                  class="season-week-planner-note"
+                  id="seasonWeekPlannerNote"
+                ></p>
+              </details>
+              <section class="calendar-event-manager">
+                <div class="calendar-event-manager-head">
+                  <strong>일정 추가</strong>
+                  <small>이 브라우저에 저장됩니다.</small>
+                </div>
+                <form id="calendarEventForm" class="calendar-event-form">
+                  <input type="date" id="calendarEventDate" required />
+                  <input
+                    type="text"
+                    id="calendarEventTitle"
+                    maxlength="50"
+                    placeholder="일정명을 입력하세요"
+                    required
+                  />
+                  <button type="submit">추가</button>
+                </form>
+                <div
+                  class="calendar-user-event-list"
+                  id="calendarUserEventList"
+                ></div>
+              </section>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-page setup-page" id="setupPage" hidden>
+        <div class="setup-page-head">
+          <div>
+            <span>클래스 · 스탯 · 장착 룬 통합</span>
+            <h2>세팅 분석</h2>
+            <p>
+              현재 스탯을 기준으로 장착 룬과 클래스 조건이 실제 전투 수치에
+              만드는 변화를 확인합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="setup-input-bar setup-focused-inputs">
+          <label class="setup-class-control">
+            <span>클래스 선택</span>
+            <select
+              id="setupClassSelect"
+              aria-label="세팅 분석 클래스 선택"
+            ></select>
+            <small>장신구 룬과 클래스 조건부 효과가 함께 변경됩니다.</small>
+          </label>
+          <div class="setup-class-effects" id="setupClassEffects"></div>
+        </div>
+
+        <div class="setup-workspace">
+          <section class="setup-equipment-panel">
+            <div class="setup-panel-title">
+              <div>
+                <span>1 · 장착 세팅</span>
+                <h3>장비별 룬 선택</h3>
+              </div>
+              <button type="button" id="setupClearBuild">룬 초기화</button>
+            </div>
+            <div class="setup-equipment-list" id="setupEquipmentSlots"></div>
+          </section>
+
+          <section class="setup-stats-panel">
+            <div class="setup-panel-title setup-stats-head">
+              <div>
+                <span>2 · 현재 기준값</span>
+                <h3>핵심 스탯 직접 입력</h3>
+              </div>
+              <div class="setup-ocr-status">
+                게임 스탯창에 표시된 수치를 입력하세요.
+              </div>
+            </div>
+            <div class="setup-game-stats" id="setupStatReadout"></div>
+          </section>
+        </div>
+
+        <section class="setup-results-panel">
+          <div class="setup-panel-title">
+            <div>
+              <span>3 · 변화 분석</span>
+              <h3>룬 세팅 적용 결과</h3>
+            </div>
+          </div>
+          <div class="setup-derived-results" id="setupDerivedResults"></div>
+        </section>
+
+        <div
+          class="setup-rune-picker"
+          id="setupRunePicker"
+          hidden
+          aria-hidden="true"
+          role="dialog"
+          aria-modal="true"
+          aria-label="슬롯 룬 선택"
+        >
+          <button
+            type="button"
+            class="setup-picker-backdrop"
+            data-setup-picker-close
+            aria-label="룬 선택 닫기"
+          ></button>
+          <section class="setup-picker-panel">
+            <div class="setup-picker-head">
+              <div>
+                <span id="setupPickerSlotType"></span>
+                <h3 id="setupPickerTitle">룬 선택</h3>
+              </div>
+              <button type="button" data-setup-picker-close aria-label="닫기">
+                ×
+              </button>
+            </div>
+            <label class="setup-picker-search">
+              <span>검색</span>
+              <input
+                type="search"
+                id="setupRuneSearch"
+                placeholder="룬 이름 또는 효과 검색"
+                autocomplete="off"
+              />
+            </label>
+            <div class="setup-picker-list" id="setupRunePickerList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-page rune-page" id="runePage" hidden>
+        <div class="rune-page-head">
+          <div>
+            <span class="rune-page-eyebrow">시즌 2 · 최고 등급</span>
+            <h2>룬 계산기</h2>
+            <p>
+              무기·방어구·엠블럼 룬을 선택해 보유 효과를 한 번에 확인합니다.
+            </p>
+          </div>
+          <span class="rune-data-note">10성 전설 · 신화</span>
+        </div>
+
+        <div
+          class="rune-type-switch"
+          id="runeTypeFilters"
+          aria-label="룬 부위 선택"
+        ></div>
+        <div class="rune-calculator-layout">
+          <aside class="rune-list-panel">
+            <label class="rune-search-box" for="runeSearchInput">
+              <span>룬 검색</span>
+              <input
+                id="runeSearchInput"
+                type="search"
+                placeholder="룬 이름 또는 효과 검색"
+                autocomplete="off"
+              />
+            </label>
+            <div class="rune-list-heading">
+              <strong id="runeListTitle">무기 룬</strong>
+              <span id="runeListCount"></span>
+            </div>
+            <div class="rune-list" id="runeList"></div>
+          </aside>
+          <section class="rune-build-summary" id="runeBuildSummary"></section>
+        </div>
+        <p class="rune-source-note">
+          룬 효과 출처:
+          <a
+            href="https://mobilab.me/mobidex/runes/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >모비랩 룬 도감</a
+          >
+          · 시즌 2 데이터는 변경될 수 있습니다.
+        </p>
+        <div
+          class="rune-modal"
+          id="runeModal"
+          hidden
+          aria-hidden="true"
+          role="dialog"
+          aria-modal="true"
+          aria-label="룬 상세 효과"
+        >
+          <button
+            type="button"
+            class="rune-modal-backdrop"
+            data-rune-modal-close
+            aria-label="룬 상세 닫기"
+          ></button>
+          <div class="rune-modal-panel">
+            <button
+              type="button"
+              class="rune-modal-close"
+              data-rune-modal-close
+              aria-label="닫기"
+            >
+              ×
+            </button>
+            <article class="rune-detail-panel" id="runeDetail"></article>
+          </div>
+        </div>
       </section>
 
       <section class="tab-page craft-page" id="craftPage" hidden>
@@ -832,12 +1378,16 @@
       </section>
     </main>
 
+    <script src="./js/rune-data.js" defer></script>
+    <script src="./js/rune.js" defer></script>
     <script src="./js/crafting-data.js" defer></script>
     <script src="./js/crafting.js" defer></script>
+    <script src="./js/scroll-crafting.js" defer></script>
     <script src="./js/enchant-data.js" defer></script>
     <script src="./js/enchant.js" defer></script>
     <script src="./js/misc.js" defer></script>
     <script src="./js/calculator-data.js" defer></script>
+    <script src="./js/setup-analysis.js" defer></script>
     <script src="./js/calculator.js" defer></script>
   </body>
 </html>
