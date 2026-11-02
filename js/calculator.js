@@ -530,6 +530,7 @@ const defaultState = () => ({
       function effectValueText(effect) {
         const parts = [];
         if (effect.crit) parts.push(`치명타 +${effect.crit}%`);
+        if (effect.damage) parts.push(`치명타 피해 +${effect.damage}%`);
         if (effect.extra) parts.push(`추가타 +${effect.extra}%`);
         return parts.join(" · ");
       }
@@ -537,7 +538,7 @@ const defaultState = () => ({
       function renderClassControls() {
         const select = document.getElementById("classSelect");
         const relevantEffects = classEffects.filter(
-          (effect) => effect.crit || effect.extra,
+          (effect) => effect.crit || effect.damage || effect.extra,
         );
         const classes = [
           ...new Set(relevantEffects.map((effect) => effect.className)),
@@ -553,7 +554,7 @@ const defaultState = () => ({
         const target = document.getElementById("classEffectOptions");
         if (!state.selectedClass) {
           target.innerHTML =
-            '<div class="class-effect-empty">치명타/추가타 관련 스킬이 있는 클래스만 선택 가능하며, 해당 클래스의 효과가 표시됩니다.</div>';
+            '<div class="class-effect-empty">치명타·치명타 피해·추가타 관련 스킬이 있는 클래스만 선택 가능하며, 해당 클래스의 효과가 표시됩니다.</div>';
           return;
         }
 
@@ -660,7 +661,7 @@ const defaultState = () => ({
         const summaryGrid = document.querySelector(".summary-grid");
         const columns = document.querySelector(".columns");
         const liveSummary = document.getElementById("mobileLiveSummary");
-        const single = mode !== "all";
+        const single = mode === "extra";
         if (summaryGrid)
           summaryGrid.style.gridTemplateColumns = single ? "1fr" : "";
         if (columns) columns.style.gridTemplateColumns = single ? "1fr" : "";
@@ -680,6 +681,7 @@ const defaultState = () => ({
 
         renderList("critList", critItems, "crit");
         renderList("extraList", extraItems, "extra");
+        renderList("damageList", damageItems, "damage");
 
         const r = calculate();
         const critScenario = conditionScenarioData(
@@ -721,6 +723,12 @@ const defaultState = () => ({
           scenarioRangeText(critScenario);
         document.getElementById("mobileExtraValue").textContent =
           scenarioRangeText(extraScenario);
+        document.getElementById("mobileDamageValue").textContent = fmt(
+          r.totalDamage,
+        );
+        document.getElementById("mobileEfficiencyValue").textContent = fmt(
+          r.efficiency,
+        );
         applyViewMode();
 
         document.getElementById("summaryCritCondition").innerHTML =
@@ -737,14 +745,28 @@ const defaultState = () => ({
             r.baseExtra,
             r.classBonus.extra,
           );
+        document.getElementById("summaryDamageCondition").textContent = "";
+        document.getElementById("summaryEfficiencyCondition").textContent =
+          r.critCycleEfficiency
+            ? `반복 : ${fmt(r.critCycleEfficiency.normal)}(침식) → ${fmt(r.critCycleEfficiency.over100)}(100 이상) → ${fmt(r.critCycleEfficiency.polluted)}(오염)`
+            : critScenario.varies
+              ? `최소 조건 시 ${fmt(r.efficiencyMin)}`
+              : "";
 
         document.getElementById("critTotal").textContent = fmt(r.totalCrit);
         document.getElementById("extraTotal").textContent = fmt(r.totalExtra);
+        document.getElementById("damageTotal").textContent = fmt(r.totalDamage);
+        document.getElementById("summaryDamage").textContent = fmt(r.totalDamage);
+        document.getElementById("summaryEfficiency").textContent = fmt(
+          r.efficiency,
+        );
 
         document.getElementById("summaryCritSub").textContent =
           `기본 ${fmt(r.baseCrit)} + 룬 ${fmt(r.crit.base)}${r.classBonus.crit ? ` + 클래스 ${fmt(r.classBonus.crit)}` : ""}${r.critCondition ? ` + 조건부 ${fmt(r.critCondition)}` : ""}`;
         document.getElementById("summaryExtraSub").textContent =
           `기본 ${fmt(r.baseExtra)} + 룬 ${fmt(r.extra.base + r.classBonus.extra)}${r.classBonus.extra ? ` (클래스 ${fmt(r.classBonus.extra)} 포함)` : ""}${r.extraCondition ? ` + 조건부 ${fmt(r.extraCondition)}` : ""}`;
+        document.getElementById("summaryDamageSub").textContent =
+          `기본 ${fmt(r.baseDamage)} × (1 + 항목 ${r.damage.base.toFixed(2)}%${r.classBonus.damage ? ` + 클래스 ${r.classBonus.damage.toFixed(2)}%` : ""})`;
 
         if (activeId) {
           const restored = document.querySelector(`[data-id="${activeId}"]`);
@@ -766,7 +788,13 @@ const defaultState = () => ({
 
 ② 추가타 확률
 최대: ((1 + ${r.baseExtra.toFixed(2)} ÷ 100) × (1 + (${r.extra.base.toFixed(2)} + ${r.classBonus.extra.toFixed(2)}) ÷ 100) − 1) × 100 + ${r.extraCondition.toFixed(2)} = ${r.totalExtra.toFixed(2)}%
-최소: ((1 + ${r.baseExtra.toFixed(2)} ÷ 100) × (1 + (${r.extraMin.base.toFixed(2)} + ${r.classBonus.extra.toFixed(2)}) ÷ 100) − 1) × 100 = ${r.totalExtraMin.toFixed(2)}%`;
+최소: ((1 + ${r.baseExtra.toFixed(2)} ÷ 100) × (1 + (${r.extraMin.base.toFixed(2)} + ${r.classBonus.extra.toFixed(2)}) ÷ 100) − 1) × 100 = ${r.totalExtraMin.toFixed(2)}%
+
+③ 치명타 피해
+${r.baseDamage.toFixed(2)} × (1 + (${r.damage.base.toFixed(2)} + ${r.classBonus.damage.toFixed(2)}) ÷ 100) = ${r.totalDamage.toFixed(2)}%
+
+④ 최종 효율
+(1 + ${Math.min(Math.max(r.totalCrit, 0), 100).toFixed(2)} ÷ 100 × (${r.totalDamage.toFixed(2)} ÷ 100 − 1)) × 100 = ${r.efficiency.toFixed(2)}%`;
 
         saveState();
       }
@@ -844,15 +872,19 @@ const defaultState = () => ({
 
       const APP_TAB_STORAGE_KEY = "mabinogi-active-app-tab";
       const applyAppTab = (selectedPage) => {
-        const validPage = ["calculator", "guide", "craft"].includes(
+        const validPage = ["calculator", "setup", "rune", "guide", "craft", "scrollcraft"].includes(
           selectedPage,
         )
           ? selectedPage
           : "calculator";
         document.getElementById("calculatorPage").hidden =
           validPage !== "calculator";
+        document.getElementById("setupPage").hidden = validPage !== "setup";
+        document.getElementById("runePage").hidden = validPage !== "rune";
         document.getElementById("guidePage").hidden = validPage !== "guide";
         document.getElementById("craftPage").hidden = validPage !== "craft";
+        document.getElementById("scrollCraftPage").hidden =
+          validPage !== "scrollcraft";
         document.querySelectorAll("[data-app-tab]").forEach((button) => {
           const active = button.dataset.appTab === validPage;
           button.classList.toggle("active", active);

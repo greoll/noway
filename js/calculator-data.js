@@ -366,6 +366,16 @@ const STORAGE_KEY = "mabinogi-crit-s1-s2-refined-v3";
           if (slotDiff) return slotDiff;
           return (b.season || 0) - (a.season || 0);
         });
+
+      // 메인 계산기는 현재 시즌 룬만 사용한다. 이전에 저장된 시즌 1 선택값도
+      // 목록과 합산 대상에서 제외되도록 데이터 단계에서 제거한다.
+      const removeSeasonOneRunes = (items) => {
+        for (let index = items.length - 1; index >= 0; index -= 1) {
+          if (items[index].season === 1) items.splice(index, 1);
+        }
+      };
+      removeSeasonOneRunes(critItems);
+      removeSeasonOneRunes(extraItems);
       sortByEquipSlot(critItems);
       sortByEquipSlot(extraItems);
 
