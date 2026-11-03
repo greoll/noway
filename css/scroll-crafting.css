@@ -1,0 +1,1353 @@
+/* 스크롤 제작 계획 */
+.scroll-craft-page {
+  display: grid;
+  gap: 16px;
+}
+.scroll-craft-page[hidden] {
+  display: none;
+}
+.scroll-craft-intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 26px;
+  border: 1px solid rgba(112, 223, 203, 0.2);
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(24, 43, 66, 0.98),
+    rgba(15, 25, 45, 0.98)
+  );
+}
+.scroll-craft-kicker {
+  color: #62dfbd;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+.scroll-craft-intro h2 {
+  margin: 6px 0 5px;
+  color: #f4f8ff;
+  font-size: clamp(21px, 2.1vw, 29px);
+  line-height: 1.3;
+}
+.scroll-craft-intro p {
+  margin: 0;
+  color: #aebbd0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.scroll-craft-reset {
+  flex: 0 0 auto;
+  padding: 10px 15px;
+  border: 1px solid rgba(255, 194, 102, 0.35);
+  border-radius: 10px;
+  color: #ffd38a;
+  background: rgba(255, 177, 67, 0.08);
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.scroll-craft-reset:hover {
+  border-color: rgba(255, 194, 102, 0.68);
+  background: rgba(255, 177, 67, 0.14);
+}
+
+.scroll-craft-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.scroll-craft-summary article {
+  min-width: 0;
+  padding: 17px 19px;
+  border: 1px solid rgba(133, 159, 202, 0.18);
+  border-radius: 14px;
+  background: #121d33;
+  box-shadow: inset 0 2px rgba(112, 223, 203, 0.52);
+}
+.scroll-craft-summary article.warning {
+  box-shadow: inset 0 2px #ff826f;
+}
+.scroll-craft-summary article.complete {
+  box-shadow: inset 0 2px #70dfcb;
+}
+.scroll-craft-summary span {
+  display: block;
+  color: #aab7cb;
+  font-size: 13px;
+  font-weight: 850;
+}
+.scroll-craft-summary strong {
+  display: block;
+  margin-top: 5px;
+  color: #f2f7ff;
+  font-size: 27px;
+  line-height: 1.1;
+}
+.scroll-craft-summary strong small {
+  margin-left: 4px;
+  color: #71e0c9;
+  font-size: 13px;
+}
+.scroll-craft-summary p {
+  margin: 6px 0 0;
+  color: #7988a1;
+  font-size: 12px;
+}
+
+.scroll-craft-panel {
+  overflow: hidden;
+  border: 1px solid rgba(133, 159, 202, 0.18);
+  border-radius: 16px;
+  background: #111b2f;
+}
+.scroll-craft-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 19px;
+  border-bottom: 1px solid rgba(133, 159, 202, 0.14);
+  background: rgba(30, 44, 70, 0.72);
+}
+.scroll-craft-panel-head > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.scroll-craft-panel-head > div > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 8px;
+  color: #091721;
+  background: #70dfcb;
+  font-size: 12px;
+  font-weight: 950;
+}
+.scroll-craft-panel-head h3 {
+  margin: 0;
+  color: #f2f6fd;
+  font-size: 19px;
+}
+.scroll-craft-panel-head p {
+  margin: 0;
+  color: #8796ad;
+  font-size: 13px;
+}
+.scroll-craft-table-wrap {
+  max-width: 100%;
+  overflow: auto;
+}
+.scroll-craft-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #dbe4f2;
+  font-size: 13px;
+}
+.scroll-craft-table th,
+.scroll-craft-table td {
+  padding: 10px 9px;
+  border-right: 1px solid rgba(139, 163, 207, 0.1);
+  border-bottom: 1px solid rgba(139, 163, 207, 0.1);
+  text-align: center;
+  white-space: nowrap;
+}
+.scroll-craft-table thead th {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  padding-block: 11px;
+  color: #aab8cc;
+  background: #1a2740;
+  font-size: 12px;
+  font-weight: 900;
+}
+.scroll-craft-table tbody tr:hover > * {
+  background-color: rgba(95, 218, 193, 0.045);
+}
+.scroll-craft-table tbody th {
+  min-width: 175px;
+  padding-left: 14px;
+  text-align: left;
+  background: #111b2f;
+}
+.scroll-craft-table tbody th b {
+  display: block;
+  color: #edf4ff;
+  font-size: 14px;
+}
+.scroll-craft-table tbody th small {
+  display: inline-block;
+  margin: 4px 7px 0 0;
+  color: #7e8da5;
+  font-size: 10px;
+}
+.scroll-craft-table .rank {
+  color: #6f809b;
+  font-weight: 900;
+}
+.scroll-craft-table .yield {
+  color: #cbd7e7;
+  font-size: 15px;
+  font-weight: 900;
+}
+.scroll-craft-table .editable {
+  padding: 0;
+  background: rgba(255, 205, 91, 0.13);
+}
+.scroll-craft-table .editable label {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.scroll-craft-table input,
+.scroll-material-numbers input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 36px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  color: #fff0a8;
+  background: transparent;
+  font: 900 15px/1 inherit;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.scroll-craft-table input:focus,
+.scroll-material-numbers input:focus {
+  box-shadow: inset 0 0 0 2px #ffe07c;
+  background: rgba(255, 214, 87, 0.12);
+}
+.scroll-craft-table input::-webkit-inner-spin-button,
+.scroll-craft-table input::-webkit-outer-spin-button,
+.scroll-material-numbers input::-webkit-inner-spin-button,
+.scroll-material-numbers input::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+.scroll-craft-table .product-total strong {
+  color: #70dfcb;
+  font-size: 16px;
+}
+.scroll-craft-table .product-total small {
+  margin-left: 3px;
+  color: #8392a8;
+}
+.scroll-craft-table .note {
+  min-width: 120px;
+  color: #9dabc0;
+}
+.difficulty {
+  display: inline-flex;
+  min-width: 49px;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+.difficulty.easy {
+  color: #78e3ca;
+  background: rgba(76, 205, 177, 0.1);
+}
+.difficulty.hard {
+  color: #ffbc77;
+  background: rgba(255, 155, 75, 0.11);
+}
+
+.scroll-craft-material-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px;
+}
+.scroll-material-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(135, 159, 198, 0.16);
+  border-radius: 12px;
+  background: rgba(10, 18, 33, 0.42);
+}
+.scroll-material-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(135, 159, 198, 0.11);
+}
+.scroll-material-card h4 {
+  margin: 0;
+  color: #f0f5fd;
+  font-size: 16px;
+}
+.scroll-material-card header span {
+  display: block;
+  margin-top: 3px;
+  color: #7f8da3;
+  font-size: 11px;
+}
+.scroll-material-card header > b {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+.scroll-material-card.short header > b {
+  color: #ff9b8b;
+  background: rgba(255, 104, 87, 0.11);
+}
+.scroll-material-card.enough header > b {
+  color: #65dfbe;
+  background: rgba(69, 211, 173, 0.1);
+}
+.scroll-material-numbers {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  align-items: end;
+  gap: 8px;
+  padding: 12px 14px;
+}
+.scroll-material-numbers label,
+.scroll-material-numbers > div {
+  min-width: 0;
+}
+.scroll-material-numbers span {
+  display: block;
+  margin-bottom: 6px;
+  color: #8f9db2;
+  font-size: 11px;
+  font-weight: 800;
+}
+.scroll-material-numbers input {
+  width: 100%;
+  min-height: 38px;
+  text-align: right;
+  padding: 0 10px;
+}
+.scroll-material-numbers strong {
+  display: block;
+  overflow: hidden;
+  color: #dfe8f5;
+  font-size: 18px;
+  text-overflow: ellipsis;
+}
+.scroll-material-card.short .scroll-material-numbers > div:last-child strong {
+  color: #ff9583;
+}
+.scroll-material-card.enough .scroll-material-numbers > div:last-child strong {
+  color: #67dfbe;
+}
+.scroll-material-classline {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-top: 1px solid rgba(135, 159, 198, 0.1);
+}
+.scroll-material-classline span {
+  min-width: 0;
+  padding: 8px 5px;
+  border-right: 1px solid rgba(135, 159, 198, 0.08);
+  color: #b9c5d7;
+  font-size: 11px;
+  text-align: center;
+}
+.scroll-material-classline span:last-child {
+  border-right: 0;
+}
+.scroll-material-classline b {
+  display: block;
+  margin-bottom: 3px;
+  color: #71829d;
+  font-size: 9px;
+}
+
+.scroll-craft-details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px 19px;
+  cursor: pointer;
+  list-style: none;
+}
+.scroll-craft-details > summary::-webkit-details-marker {
+  display: none;
+}
+.scroll-craft-details > summary span {
+  color: #f0f5fd;
+  font-size: 18px;
+  font-weight: 900;
+}
+.scroll-craft-details > summary b {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+  place-items: center;
+  border-radius: 8px;
+  color: #0c1927;
+  background: #70dfcb;
+  font-size: 12px;
+}
+.scroll-craft-details > summary small {
+  color: #8796ad;
+  font-size: 12px;
+}
+.scroll-craft-details[open] > summary {
+  border-bottom: 1px solid rgba(133, 159, 202, 0.14);
+}
+.detail-table tbody th {
+  min-width: 170px;
+  font-size: 13px;
+}
+.detail-table tbody td:last-child strong {
+  color: #6fe0c1;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .scroll-craft-material-grid {
+    grid-template-columns: 1fr;
+  }
+  .scroll-craft-table {
+    min-width: 1060px;
+  }
+  .detail-table {
+    min-width: 980px;
+  }
+}
+@media (max-width: 680px) {
+  .scroll-craft-page {
+    gap: 10px;
+  }
+  .scroll-craft-intro {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 18px 16px;
+    border-radius: 14px;
+  }
+  .scroll-craft-intro h2 {
+    font-size: 21px;
+  }
+  .scroll-craft-reset {
+    align-self: flex-start;
+  }
+  .scroll-craft-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .scroll-craft-summary article {
+    padding: 12px 10px;
+    border-radius: 11px;
+  }
+  .scroll-craft-summary span {
+    font-size: 11px;
+  }
+  .scroll-craft-summary strong {
+    font-size: 21px;
+  }
+  .scroll-craft-summary p {
+    display: none;
+  }
+  .scroll-craft-panel {
+    border-radius: 12px;
+  }
+  .scroll-craft-panel-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    padding: 13px 14px;
+  }
+  .scroll-craft-panel-head h3 {
+    font-size: 17px;
+  }
+  .scroll-craft-panel-head p {
+    padding-left: 38px;
+    font-size: 11px;
+  }
+  .scroll-craft-material-grid {
+    padding: 8px;
+  }
+  .scroll-material-numbers {
+    grid-template-columns: 1.1fr 1fr 1fr;
+    padding: 10px;
+  }
+  .scroll-material-numbers strong {
+    font-size: 16px;
+  }
+  .scroll-material-classline span {
+    font-size: 10px;
+  }
+  .scroll-craft-details > summary {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 14px;
+  }
+}
+
+/* 스크롤 제작: 스프레드시트형 간결 배치 */
+.scroll-craft-page {
+  gap: 10px;
+}
+.scroll-craft-page .scroll-craft-intro {
+  position: relative;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #121d32;
+}
+.scroll-craft-page .scroll-craft-intro h2 {
+  margin: 0 0 3px;
+  font-size: 20px;
+}
+.scroll-craft-page .scroll-craft-intro p {
+  font-size: 12px;
+}
+.scroll-craft-page .scroll-craft-intro p b {
+  color: #ffe28a;
+}
+.scroll-craft-scope {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+.scroll-craft-scope-buttons {
+  display: flex;
+  padding: 3px;
+  border: 1px solid rgba(133, 159, 202, 0.2);
+  border-radius: 9px;
+  background: rgba(7, 14, 27, 0.46);
+}
+.scroll-craft-scope-buttons button {
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 6px;
+  color: #8493aa;
+  background: transparent;
+  font: 850 11px/1 inherit;
+  cursor: pointer;
+}
+.scroll-craft-scope-buttons button.active {
+  color: #071a1b;
+  background: #70dfcb;
+}
+.scroll-craft-scope label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.scroll-craft-scope label[hidden] {
+  display: none;
+}
+.scroll-craft-scope label span {
+  color: #8493aa;
+  font-size: 10px;
+  font-weight: 850;
+}
+.scroll-craft-scope select {
+  min-height: 34px;
+  padding: 0 27px 0 9px;
+  border: 1px solid rgba(112, 223, 203, 0.3);
+  border-radius: 7px;
+  outline: 0;
+  color: #eaf4ff;
+  background: #121e33;
+  font: 850 12px/1 inherit;
+}
+.scroll-craft-scope select:focus {
+  border-color: #70dfcb;
+}
+.scroll-craft-page .scroll-craft-summary {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  gap: 0;
+}
+.scroll-craft-page .scroll-craft-summary article {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 118px;
+  padding: 7px 14px;
+  border: 0;
+  border-right: 1px solid rgba(133, 159, 202, 0.16);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.scroll-craft-page .scroll-craft-summary article:last-child {
+  border-right: 0;
+}
+.scroll-craft-page .scroll-craft-summary span {
+  color: #8190a8;
+  font-size: 11px;
+}
+.scroll-craft-page .scroll-craft-summary strong {
+  margin: 0;
+  color: #eef5ff;
+  font-size: 17px;
+}
+.scroll-craft-page .scroll-craft-summary .warning strong {
+  color: #ff9887;
+}
+.scroll-craft-page .scroll-craft-summary .complete strong {
+  color: #69dfbf;
+}
+.scroll-craft-page .scroll-craft-summary p,
+.scroll-craft-page .scroll-craft-summary small {
+  display: none;
+}
+.scroll-craft-page .scroll-craft-reset {
+  padding: 8px 11px;
+  font-size: 11px;
+}
+.scroll-craft-page .scroll-craft-panel {
+  border-radius: 12px;
+}
+.scroll-craft-page .scroll-material-panel {
+  width: fit-content;
+  max-width: 100%;
+  justify-self: start;
+}
+.scroll-craft-page .scroll-material-panel .scroll-craft-panel-head {
+  justify-content: flex-start;
+}
+.scroll-craft-page .scroll-craft-panel-head {
+  padding: 10px 13px;
+}
+.scroll-craft-page .scroll-craft-panel-head > div > span {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+.scroll-craft-page .scroll-craft-panel-head h3 {
+  font-size: 16px;
+}
+.scroll-craft-page .scroll-craft-panel-head p {
+  font-size: 11px;
+}
+.scroll-plan-sort {
+  display: flex;
+  min-width: 0;
+  overflow-x: auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px !important;
+  scrollbar-width: thin;
+}
+.scroll-craft-page .scroll-craft-panel-head .scroll-plan-sort > span {
+  display: block;
+  width: auto;
+  height: auto;
+  margin-right: 4px;
+  color: #7f8fa7;
+  background: transparent;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.scroll-plan-sort button {
+  flex: 0 0 auto;
+  padding: 5px 7px;
+  border: 1px solid rgba(133, 159, 202, 0.17);
+  border-radius: 5px;
+  color: #8998af;
+  background: rgba(9, 16, 29, 0.38);
+  font: 800 10px/1 inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.scroll-plan-sort button:hover {
+  color: #dce7f5;
+  border-color: rgba(112, 223, 203, 0.3);
+}
+.scroll-plan-sort button.active {
+  color: #071918;
+  border-color: #70dfcb;
+  background: #70dfcb;
+}
+.scroll-craft-page .scroll-craft-table th,
+.scroll-craft-page .scroll-craft-table td {
+  height: 42px;
+  padding: 5px 7px;
+  font-size: 12px;
+}
+.scroll-craft-page .scroll-craft-table thead th {
+  height: 40px;
+  padding: 5px 7px;
+  font-size: 11px;
+}
+.scroll-craft-page .scroll-craft-table tbody th {
+  min-width: 160px;
+  padding-left: 10px;
+}
+.scroll-craft-page .scroll-craft-table tbody th b {
+  font-size: 13px;
+}
+.scroll-craft-page .scroll-craft-table tbody th small {
+  margin-top: 2px;
+  font-size: 9px;
+}
+.scroll-craft-page .scroll-craft-table input,
+.scroll-craft-page .scroll-material-numbers input {
+  width: 100%;
+  min-height: 31px;
+  border-radius: 0;
+  font-size: 13px;
+}
+.scroll-craft-page .plan-table {
+  min-width: 960px;
+}
+.scroll-craft-page[data-scope="single"] .plan-table {
+  min-width: 700px;
+}
+.scroll-craft-page .plan-table thead tr:first-child > th:first-child,
+.scroll-craft-page .plan-table tbody td:first-child {
+  position: sticky;
+  z-index: 4;
+  left: 0;
+  width: 34px;
+  min-width: 34px;
+  background: #17243c;
+}
+.scroll-craft-page .plan-table thead tr:first-child > th:nth-child(2),
+.scroll-craft-page .plan-table tbody th {
+  position: sticky;
+  z-index: 4;
+  left: 34px;
+  background: #141f34;
+}
+.scroll-craft-page .plan-table thead tr:first-child > th:nth-child(2) {
+  background: #1a2740;
+}
+.scroll-craft-page .plan-table th,
+.scroll-craft-page .plan-table td {
+  height: 35px;
+  padding-block: 3px;
+}
+.scroll-craft-page .plan-table thead th {
+  height: 35px;
+  padding-block: 3px;
+}
+.scroll-craft-page .plan-table thead .plan-head-group th {
+  top: 0;
+  height: 25px;
+}
+.scroll-craft-page .plan-table thead .plan-head-classes th {
+  top: 25px;
+  height: 28px;
+}
+.scroll-craft-page .plan-table thead .scroll-count-head {
+  color: #70dfcb;
+  background: #16283b;
+  letter-spacing: 0.02em;
+}
+.scroll-craft-page .plan-table tbody th {
+  min-width: 250px;
+}
+.scroll-plan-product {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+}
+.scroll-plan-product .difficulty {
+  box-sizing: border-box;
+  flex: 0 0 46px;
+  width: 46px;
+  min-width: 46px;
+  max-width: 46px;
+  justify-content: center;
+  padding: 3px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.scroll-plan-product .plan-category {
+  box-sizing: border-box;
+  flex: 0 0 80px;
+  width: 80px;
+  min-width: 80px;
+  padding: 3px 5px;
+  border-radius: 4px;
+  color: #b9c7da;
+  background: rgba(112, 137, 178, 0.13);
+  font-size: 11px;
+  font-weight: 850;
+  text-align: center;
+  white-space: nowrap;
+}
+.scroll-plan-product b {
+  overflow: hidden;
+  min-width: 0;
+  color: #edf4ff;
+  font-size: 12px !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.plan-total-materials {
+  min-width: 190px;
+  white-space: nowrap;
+}
+.plan-total-materials > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 5px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(78, 207, 177, 0.07);
+  font-size: 11px;
+}
+.plan-total-materials > span:last-child {
+  margin-right: 0;
+}
+.plan-total-materials > span b {
+  color: #9eadc1;
+  font-size: 11px;
+}
+.plan-total-materials > span strong {
+  color: #67dfbe;
+  font-size: 12px;
+}
+.plan-total-materials > span.short {
+  background: rgba(255, 103, 83, 0.1);
+}
+.plan-total-materials > span.short b,
+.plan-total-materials > span.short strong {
+  color: #ff9f90;
+}
+.scroll-craft-page .plan-table input {
+  min-height: 28px;
+}
+
+.scroll-craft-page .material-table {
+  width: max-content;
+  min-width: 0;
+  max-width: none;
+}
+.scroll-craft-page[data-scope="single"] .material-table {
+  width: max-content;
+  min-width: 0;
+}
+.scroll-craft-page .material-table thead .input-head {
+  color: #ffe291;
+  background: #332f21;
+}
+.scroll-craft-page .material-table thead th:first-child {
+  width: 120px;
+  min-width: 120px;
+}
+.scroll-craft-page .material-table thead th:nth-child(2) {
+  width: 104px;
+  min-width: 104px;
+}
+.scroll-craft-page .material-table thead .input-head {
+  width: 64px;
+  min-width: 64px;
+  padding-inline: 3px;
+}
+.scroll-craft-page .material-table tbody th {
+  color: #eef5ff;
+  background: #141f34;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.scroll-craft-page .material-table tbody th.material-source-group {
+  position: sticky;
+  z-index: 3;
+  left: 0;
+  width: 52px;
+  min-width: 52px;
+  padding-inline: 3px;
+  color: #72e1cc;
+  background: #183044;
+  font-size: 12px;
+  font-weight: 950;
+  text-align: center;
+  vertical-align: middle;
+}
+.scroll-craft-page .material-table tbody th.material-source-detail {
+  position: sticky;
+  z-index: 2;
+  left: 52px;
+  width: 68px;
+  min-width: 68px;
+  padding-inline: 3px;
+  color: #75bfcf;
+  background: #17283d;
+  font-size: 12px;
+  font-weight: 850;
+  text-align: center;
+  vertical-align: middle;
+}
+.scroll-craft-page .material-table tbody th.material-name {
+  position: sticky;
+  z-index: 1;
+  left: 120px;
+  width: 104px;
+  min-width: 104px;
+  padding-inline: 5px;
+  text-align: center;
+}
+.scroll-craft-page .material-table tbody th.material-name b {
+  display: inline;
+  color: #eef5ff;
+  font-size: 12px;
+}
+.scroll-craft-page .material-table .editable {
+  width: 64px;
+  min-width: 64px;
+  padding-inline: 0;
+  background: rgba(255, 213, 91, 0.13);
+}
+.scroll-craft-page .material-table input {
+  width: 100%;
+}
+.scroll-craft-page .material-table .material-total {
+  width: 68px;
+  min-width: 68px;
+}
+.scroll-craft-page .material-table .material-total strong {
+  color: #70dfcb;
+  font-size: 14px;
+}
+.scroll-craft-page .material-table .material-balance {
+  width: 86px;
+  min-width: 86px;
+}
+.scroll-craft-page .material-table .class-need {
+  width: 48px;
+  min-width: 48px;
+  color: #a9b6c9;
+}
+.scroll-craft-page .material-table thead th:nth-child(n + 6) {
+  width: 48px;
+  min-width: 48px;
+}
+.scroll-craft-page .material-table .first-class,
+.scroll-craft-page .material-table thead th:nth-child(6) {
+  border-left: 2px solid rgba(112, 223, 203, 0.16);
+}
+.scroll-craft-page .material-table .material-balance b {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 9px;
+}
+.scroll-craft-page .material-table .material-balance strong {
+  font-size: 13px;
+}
+.scroll-craft-page .material-table tr.short .material-balance b {
+  color: #ff9b8b;
+  background: rgba(255, 104, 87, 0.12);
+}
+.scroll-craft-page .material-table tr.short .material-balance strong {
+  color: #ff9988;
+}
+.scroll-craft-page .material-table tr.enough .material-balance b {
+  color: #67dfbe;
+  background: rgba(69, 211, 173, 0.1);
+}
+.scroll-craft-page .material-table tr.enough .material-balance strong {
+  color: #67dfbe;
+}
+.scroll-craft-page .scroll-craft-details {
+  opacity: 0.9;
+}
+.scroll-craft-page .scroll-craft-details > summary {
+  padding: 12px 14px;
+}
+.scroll-craft-page .scroll-craft-details > summary span {
+  font-size: 14px;
+}
+.scroll-craft-page .scroll-craft-details > summary b {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+.scroll-craft-page .detail-table {
+  min-width: 930px;
+}
+.scroll-craft-page .detail-table th,
+.scroll-craft-page .detail-table td {
+  height: 36px;
+  padding: 3px 7px;
+}
+.scroll-craft-page .detail-table tbody th {
+  min-width: 250px;
+}
+.scroll-craft-page .detail-table td:nth-child(3),
+.scroll-craft-page .detail-table td:nth-child(4) {
+  color: #dfe9f6;
+  font-size: 13px;
+}
+.detail-materials {
+  display: flex;
+  min-width: 190px;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.detail-materials span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  color: #d9e3f0;
+  background: rgba(124, 151, 197, 0.09);
+  font-size: 10px;
+}
+.detail-materials span b {
+  color: #91a2ba;
+  font-size: 9px;
+}
+.detail-materials.total span {
+  color: #70dfcb;
+  background: rgba(78, 207, 177, 0.08);
+}
+.detail-materials.total span b {
+  color: #9eb1c7;
+}
+
+@media (max-width: 760px) {
+  .scroll-craft-page .scroll-craft-intro {
+    align-items: stretch;
+    gap: 10px;
+  }
+  .scroll-craft-scope {
+    align-items: stretch;
+    flex-direction: column;
+    padding-right: 92px;
+  }
+  .scroll-craft-scope-buttons button {
+    flex: 1 1 0;
+  }
+  .scroll-craft-scope label {
+    justify-content: space-between;
+  }
+  .scroll-craft-scope select {
+    flex: 1 1 auto;
+  }
+  .scroll-craft-page .scroll-craft-summary {
+    justify-content: stretch;
+    order: 3;
+    width: 100%;
+    border-top: 1px solid rgba(133, 159, 202, 0.13);
+  }
+  .scroll-craft-page .scroll-craft-summary article {
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 0;
+    padding: 8px 5px 0;
+  }
+  .scroll-craft-page .scroll-craft-summary span {
+    font-size: 10px;
+  }
+  .scroll-craft-page .scroll-craft-summary strong {
+    font-size: 15px;
+  }
+  .scroll-craft-page .scroll-craft-reset {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    align-self: flex-end;
+  }
+  .scroll-craft-page .scroll-craft-panel-head {
+    display: block;
+  }
+  .scroll-craft-page .scroll-material-panel {
+    width: 100%;
+  }
+  .scroll-craft-page .scroll-craft-panel-head p {
+    margin-top: 4px;
+    padding-left: 34px;
+  }
+  .scroll-plan-sort {
+    justify-content: flex-start;
+    margin-top: 7px;
+    padding-bottom: 2px;
+  }
+}
+
+/* 스크롤 제작 폰트 체계: 제목 16 / 본문 13 / 보조 11 */
+.scroll-craft-page .scroll-craft-panel-head h3 {
+  font-size: 16px;
+}
+.scroll-craft-page .scroll-craft-table,
+.scroll-craft-page .scroll-craft-table th,
+.scroll-craft-page .scroll-craft-table td {
+  font-size: 13px;
+}
+.scroll-craft-page .scroll-craft-table thead th {
+  font-size: 12px;
+}
+.scroll-craft-page .scroll-craft-table tbody th b,
+.scroll-plan-product b,
+.scroll-craft-page .scroll-craft-table .yield,
+.scroll-craft-page .scroll-craft-table .product-total strong,
+.scroll-craft-page .material-table .material-total strong,
+.scroll-craft-page .material-table .material-balance strong {
+  font-size: 13px !important;
+}
+.scroll-craft-page .scroll-craft-table input,
+.scroll-craft-page .scroll-material-numbers input {
+  font-size: 13px;
+}
+.scroll-plan-product .difficulty,
+.scroll-plan-product .plan-category,
+.plan-total-materials > span,
+.plan-total-materials > span b,
+.plan-total-materials > span strong,
+.scroll-craft-page .material-table tbody th small,
+.scroll-craft-page .material-table .material-balance b,
+.scroll-plan-sort button,
+.scroll-craft-page .scroll-craft-panel-head .scroll-plan-sort > span,
+.scroll-craft-scope-buttons button,
+.scroll-craft-scope label span {
+  font-size: 11px !important;
+}
+
+/* 스크롤 제작: PC에서는 계획과 재료 집계를 나란히 비교 */
+@media (min-width: 1100px) {
+  .scroll-craft-page {
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: stretch;
+  }
+  .scroll-craft-page .scroll-craft-intro {
+    grid-column: 1 / -1;
+  }
+  .scroll-craft-page .scroll-plan-panel {
+    grid-column: 1;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+  .scroll-craft-page .scroll-material-panel {
+    display: flex;
+    grid-column: 2;
+    width: fit-content;
+    max-width: 100%;
+    flex-direction: column;
+    justify-self: start;
+  }
+  .scroll-craft-page[data-scope="all"] .scroll-plan-panel {
+    grid-column: 1 / -1;
+  }
+  .scroll-craft-page[data-scope="all"] .scroll-material-panel {
+    grid-column: 1 / -1;
+  }
+  .scroll-craft-page .scroll-plan-panel > .scroll-craft-panel-head,
+  .scroll-craft-page .scroll-material-panel > .scroll-craft-panel-head {
+    box-sizing: border-box;
+    min-height: 49px;
+  }
+  .scroll-craft-page .scroll-plan-panel > .scroll-craft-table-wrap,
+  .scroll-craft-page .scroll-material-panel > .scroll-craft-table-wrap {
+    display: flex;
+    flex: 1 1 auto;
+  }
+  .scroll-craft-page .scroll-plan-panel .scroll-craft-table,
+  .scroll-craft-page .scroll-material-panel .scroll-craft-table {
+    height: 100%;
+  }
+  .scroll-craft-page .plan-table thead th,
+  .scroll-craft-page .material-table thead th {
+    box-sizing: border-box;
+  }
+  .scroll-craft-page .material-table thead th {
+    height: 53px;
+  }
+}
+
+/* 스크롤 제작: 모바일 핵심 정보형 표 */
+@media (max-width: 760px) {
+  .scroll-craft-page .scroll-craft-scope {
+    padding-right: 0;
+  }
+  .scroll-craft-page .scroll-craft-scope-buttons {
+    display: none;
+  }
+  .scroll-craft-page .scroll-craft-scope label {
+    width: 100%;
+  }
+  .scroll-craft-page .material-table,
+  .scroll-craft-page[data-scope="single"] .material-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+  .scroll-craft-page .scroll-material-panel .scroll-craft-table-wrap {
+    overflow-x: hidden;
+  }
+  .scroll-craft-page .material-table th,
+  .scroll-craft-page .material-table td {
+    box-sizing: border-box;
+    padding-inline: 2px;
+  }
+  .scroll-craft-page .material-table thead th:first-child {
+    width: 92px;
+    min-width: 0;
+  }
+  .scroll-craft-page .material-table thead th:nth-child(2) {
+    width: 76px;
+    min-width: 0;
+  }
+  .scroll-craft-page .material-table thead th:nth-child(3) {
+    width: 50px;
+    min-width: 0;
+  }
+  .scroll-craft-page .material-table thead th:nth-child(4) {
+    width: 54px;
+    min-width: 0;
+  }
+  .scroll-craft-page .material-table thead th:nth-child(5) {
+    width: 50px;
+    min-width: 0;
+  }
+  .scroll-craft-page .material-table tbody th.material-source-group {
+    left: 0;
+    width: 40px;
+    min-width: 40px;
+    padding-inline: 2px;
+  }
+  .scroll-craft-page .material-table tbody th.material-source-detail {
+    left: 40px;
+    width: 52px;
+    min-width: 52px;
+    padding-inline: 2px;
+    white-space: normal;
+  }
+  .scroll-craft-page .material-table tbody th.material-name {
+    left: 92px;
+    width: 76px;
+    min-width: 76px;
+    padding-inline: 2px;
+    white-space: normal;
+    word-break: keep-all;
+  }
+  .scroll-craft-page .material-table .editable {
+    width: 50px;
+    min-width: 50px;
+  }
+  .scroll-craft-page .material-table .material-total {
+    width: 54px;
+    min-width: 54px;
+  }
+  .scroll-craft-page .material-table .material-balance {
+    width: 50px;
+    min-width: 50px;
+    padding-inline: 2px;
+  }
+  .scroll-craft-page .material-table .material-balance b {
+    margin-right: 0;
+    font-size: 11px !important;
+  }
+  .scroll-craft-page .material-table .material-balance strong {
+    display: none;
+  }
+  .scroll-craft-page .scroll-plan-panel .scroll-craft-table-wrap {
+    overflow-x: hidden;
+  }
+  .scroll-craft-page .plan-table,
+  .scroll-craft-page[data-scope="single"] .plan-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+  .scroll-craft-page .plan-table tbody > tr > td:first-child,
+  .scroll-craft-page .plan-table tbody .yield {
+    display: none;
+  }
+  .scroll-craft-page .plan-table tbody th {
+    position: static;
+    width: 36%;
+    min-width: 0;
+  }
+  .scroll-craft-page .plan-table thead .mobile-plan-head th:first-child {
+    width: 36%;
+  }
+  .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(2) {
+    width: 14%;
+  }
+  .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(3) {
+    width: 16%;
+  }
+  .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(4) {
+    width: 34%;
+  }
+  .scroll-craft-page .plan-table th,
+  .scroll-craft-page .plan-table td {
+    min-width: 0;
+    height: auto;
+    padding: 5px 3px;
+  }
+  .scroll-craft-page .plan-table thead th {
+    padding: 5px 2px;
+    font-size: 11px;
+    white-space: normal;
+  }
+  .scroll-craft-page .plan-table tbody th {
+    padding-left: 6px;
+    white-space: normal;
+  }
+  .scroll-plan-product {
+    display: block;
+  }
+  .scroll-plan-product .difficulty,
+  .scroll-plan-product .plan-category {
+    display: none;
+  }
+  .scroll-plan-product b {
+    display: block;
+    overflow: hidden;
+    max-width: 100%;
+    font-size: 12px !important;
+    line-height: 1.25;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: keep-all;
+  }
+  .scroll-craft-page .plan-table input {
+    min-width: 0;
+    padding: 0 2px;
+    font-size: 12px;
+  }
+  .scroll-craft-page[data-scope="all"] .plan-table input {
+    font-size: 11px;
+  }
+  .scroll-craft-page .plan-table .product-total strong {
+    font-size: 12px !important;
+  }
+  .scroll-craft-page .plan-total-materials {
+    min-width: 0;
+    white-space: normal;
+  }
+  .scroll-craft-page .plan-total-materials > span {
+    display: flex;
+    justify-content: space-between;
+    gap: 3px;
+    margin: 2px 0;
+    padding: 3px 4px;
+  }
+  .scroll-craft-page .plan-total-materials > span b {
+    overflow: hidden;
+    font-size: 10px !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .scroll-craft-page .plan-total-materials > span strong {
+    flex: 0 0 auto;
+    font-size: 10px !important;
+  }
+}
