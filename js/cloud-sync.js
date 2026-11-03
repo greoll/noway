@@ -4,23 +4,20 @@
   const SUPABASE_URL = "https://sbklxbkpgfzfpeaooxij.supabase.co";
   const SUPABASE_KEY = "sb_publishable_etPPK5UV2SucBKY3Zg0SCA_dEZUh91U";
   const DATA_PREFIX = "mabinogi-";
-  const DEVICE_USER_KEY = "cloud-sync-device-user";
-  const LAST_REMOTE_KEY = "cloud-sync-last-remote";
-  const TABLE = "user_app_state";
+  const SYNC_KEY_STORAGE = "cloud-sync-shared-key";
+  const LAST_REMOTE_STORAGE = "cloud-sync-last-remote";
+  const POLL_INTERVAL = 2500;
   const originalSetItem = Storage.prototype.setItem;
   const originalRemoveItem = Storage.prototype.removeItem;
 
   let client;
-  let session = null;
-  let remoteRow = null;
+  let syncKey = "";
   let uploadTimer = 0;
+  let pollTimer = 0;
   let applyingRemote = false;
-  let initializedUserId = null;
-  let realtimeChannel = null;
-  let pendingUploadAt = "";
-  let realtimeReloadTimer = 0;
+  let pendingUpload = false;
+  let elements = {};
 
-  const elements = {};
   const byId = (id) => document.getElementById(id);
   const isAppKey = (key) => typeof key === "string" && key.startsWith(DATA_PREFIX);
 
@@ -48,12 +45,12 @@
     elements.triggerText.textContent = text;
   }
 
-  function renderAuth() {
-    const signedIn = Boolean(session?.user);
-    elements.signedOut.hidden = signedIn;
-    elements.signedIn.hidden = !signedIn;
-    elements.userEmail.textContent = session?.user?.email || "";
-    setTrigger(signedIn ? "connected" : "", signedIn ? "동기화됨" : "동기화");
+  function renderConnection() {
+    const connected = Boolean(syncKey);
+    elements.signedOut.hidden = connected;
+    elements.signedIn.hidden = !connected;
+    elements.keyDisplay.textContent = syncKey;
+    setTrigger(connected ? "connected" : "", connected ? "동기화 연결됨" : "동기화");
   }
 
   function applyState(state) {
@@ -66,9 +63,7 @@
       }
       currentKeys.forEach((key) => originalRemoveItem.call(localStorage, key));
       Object.entries(state || {}).forEach(([key, value]) => {
-        if (isAppKey(key) && typeof value === "string") {
-          originalSetItem.call(localStorage, key, value);
-        }
+        if (isAppKey(key) && typeof value === "string") originalSetItem.call(localStorage, key, value);
       });
     } finally {
       applyingRemote = false;
@@ -76,242 +71,184 @@
   }
 
   async function fetchRemote() {
-    if (!session?.user) return null;
-    const { data, error } = await client
-      .from(TABLE)
-      .select("state, updated_at")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
+    if (!syncKey) return null;
+    const { data, error } = await client.rpc("get_shared_app_state", { p_sync_key: syncKey });
     if (error) throw error;
-    remoteRow = data;
-    return data;
+    return Array.isArray(data) ? data[0] || null : data || null;
   }
 
   async function uploadLocal({ announce = true } = {}) {
-    if (!session?.user || applyingRemote) return;
+    if (!syncKey || applyingRemote || pendingUpload) return;
     clearTimeout(uploadTimer);
+    pendingUpload = true;
     setTrigger("syncing", "저장 중");
     if (announce) setMessage("현재 기기의 데이터를 저장하고 있습니다.");
-    const updatedAt = new Date().toISOString();
-    pendingUploadAt = updatedAt;
-    const { error } = await client.from(TABLE).upsert({
-      user_id: session.user.id,
-      state: collectState(),
-      updated_at: updatedAt,
-    }, { onConflict: "user_id" });
-    if (error) {
-      pendingUploadAt = "";
+    try {
+      const { data, error } = await client.rpc("save_shared_app_state", {
+        p_sync_key: syncKey,
+        p_state: collectState(),
+      });
+      if (error) throw error;
+      const updatedAt = Array.isArray(data) ? data[0]?.updated_at : data?.updated_at || data;
+      if (updatedAt) originalSetItem.call(localStorage, LAST_REMOTE_STORAGE, String(updatedAt));
+      elements.conflict.hidden = true;
+      setTrigger("connected", "동기화 연결됨");
+      if (announce) setMessage("현재 기기 데이터를 저장했습니다.", "success");
+    } catch (error) {
       setTrigger("error", "동기화 오류");
       setMessage(`저장하지 못했습니다: ${error.message}`, "error");
       throw error;
+    } finally {
+      pendingUpload = false;
     }
-    originalSetItem.call(localStorage, DEVICE_USER_KEY, session.user.id);
-    originalSetItem.call(localStorage, LAST_REMOTE_KEY, updatedAt);
-    remoteRow = { state: collectState(), updated_at: updatedAt };
-    elements.conflict.hidden = true;
-    setTrigger("connected", "동기화됨");
-    if (announce) setMessage("현재 기기의 데이터를 클라우드에 저장했습니다.", "success");
-    window.setTimeout(() => {
-      if (pendingUploadAt === updatedAt) pendingUploadAt = "";
-    }, 1500);
   }
 
   function scheduleUpload() {
-    if (!session?.user || applyingRemote) return;
+    if (!syncKey || applyingRemote) return;
     clearTimeout(uploadTimer);
     uploadTimer = window.setTimeout(() => uploadLocal({ announce: false }).catch(() => {}), 900);
   }
 
-  async function downloadRemote({ reload = true } = {}) {
-    if (!session?.user) return;
+  async function downloadRemote({ reload = true, announce = true } = {}) {
+    if (!syncKey) return;
     setTrigger("syncing", "불러오는 중");
-    setMessage("클라우드 데이터를 불러오고 있습니다.");
+    if (announce) setMessage("클라우드 데이터를 불러오고 있습니다.");
     const row = await fetchRemote();
     if (!row) {
-      await uploadLocal();
+      await uploadLocal({ announce });
       return;
     }
     applyState(row.state);
-    originalSetItem.call(localStorage, DEVICE_USER_KEY, session.user.id);
-    originalSetItem.call(localStorage, LAST_REMOTE_KEY, row.updated_at || "");
+    originalSetItem.call(localStorage, LAST_REMOTE_STORAGE, row.updated_at || "");
     elements.conflict.hidden = true;
-    setTrigger("connected", "동기화됨");
-    setMessage("클라우드 데이터를 적용했습니다.", "success");
-    if (reload) window.setTimeout(() => location.reload(), 250);
+    setTrigger("connected", "동기화 연결됨");
+    if (announce) setMessage("클라우드 데이터를 적용했습니다.", "success");
+    if (reload) window.setTimeout(() => location.reload(), 220);
   }
 
-  async function stopRealtime() {
-    clearTimeout(realtimeReloadTimer);
-    if (!realtimeChannel || !client) return;
-    const channel = realtimeChannel;
-    realtimeChannel = null;
-    await client.removeChannel(channel);
-  }
-
-  function startRealtime() {
-    if (!session?.user || realtimeChannel) return;
-    realtimeChannel = client
-      .channel(`user-app-state-${session.user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: TABLE,
-          filter: `user_id=eq.${session.user.id}`,
-        },
-        (payload) => {
-          const next = payload.new;
-          if (!next?.updated_at) return;
-          if (pendingUploadAt && Math.abs(Date.parse(next.updated_at) - Date.parse(pendingUploadAt)) < 3000) return;
-          const lastRemote = localStorage.getItem(LAST_REMOTE_KEY) || "";
-          if (next.updated_at <= lastRemote) return;
-          remoteRow = next;
-          applyState(next.state);
-          originalSetItem.call(localStorage, DEVICE_USER_KEY, session.user.id);
-          originalSetItem.call(localStorage, LAST_REMOTE_KEY, next.updated_at);
-          setTrigger("syncing", "변경 감지");
-          setMessage("다른 기기의 변경사항을 적용합니다.", "success");
-          clearTimeout(realtimeReloadTimer);
-          realtimeReloadTimer = window.setTimeout(() => location.reload(), 350);
-        },
-      )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") setTrigger("connected", "실시간 동기화");
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          setTrigger("error", "실시간 연결 오류");
-        }
-      });
-  }
-
-  async function initializeSession(nextSession) {
-    const previousUserId = session?.user?.id || null;
-    session = nextSession;
-    renderAuth();
-    if (!session?.user) {
-      await stopRealtime();
-      initializedUserId = null;
-      remoteRow = null;
-      elements.conflict.hidden = true;
-      return;
-    }
-    if (initializedUserId === session.user.id) return;
-    if (previousUserId && previousUserId !== session.user.id) await stopRealtime();
-    initializedUserId = session.user.id;
-    startRealtime();
+  async function pollRemote() {
+    if (!syncKey || document.visibilityState !== "visible" || pendingUpload) return;
     try {
       const row = await fetchRemote();
-      const knownDevice = localStorage.getItem(DEVICE_USER_KEY) === session.user.id;
+      if (!row?.updated_at) return;
+      const lastRemote = localStorage.getItem(LAST_REMOTE_STORAGE) || "";
+      if (new Date(row.updated_at).getTime() <= new Date(lastRemote || 0).getTime()) return;
+      applyState(row.state);
+      originalSetItem.call(localStorage, LAST_REMOTE_STORAGE, row.updated_at);
+      setTrigger("syncing", "변경 감지");
+      setMessage("다른 기기의 변경사항을 적용합니다.", "success");
+      window.setTimeout(() => location.reload(), 250);
+    } catch (error) {
+      setTrigger("error", "동기화 오류");
+      setMessage(`연결 확인 실패: ${error.message}`, "error");
+    }
+  }
+
+  function startPolling() {
+    clearInterval(pollTimer);
+    if (syncKey) pollTimer = window.setInterval(pollRemote, POLL_INTERVAL);
+  }
+
+  async function connectKey(key) {
+    const normalized = key.trim();
+    if (normalized.length < 12) {
+      setMessage("동기화 키는 12자 이상이어야 합니다.", "error");
+      return;
+    }
+    syncKey = normalized;
+    originalSetItem.call(localStorage, SYNC_KEY_STORAGE, syncKey);
+    renderConnection();
+    startPolling();
+    setTrigger("syncing", "연결 확인 중");
+    try {
+      const row = await fetchRemote();
       if (!row) {
         await uploadLocal({ announce: false });
-        setMessage("이 기기의 데이터를 첫 클라우드 데이터로 저장했습니다.", "success");
+        setMessage("새 동기화 공간을 만들고 현재 데이터를 저장했습니다.", "success");
         return;
       }
       if (!hasLocalState()) {
         await downloadRemote();
         return;
       }
-      if (!knownDevice) {
-        elements.conflict.hidden = false;
-        setMessage("불러올 데이터 또는 저장할 데이터를 선택해주세요.");
-        elements.dialog.showModal();
-        return;
-      }
-      const lastRemote = localStorage.getItem(LAST_REMOTE_KEY) || "";
-      if (row.updated_at && row.updated_at > lastRemote) {
-        await downloadRemote();
-      } else {
-        setTrigger("connected", "동기화됨");
-      }
+      elements.conflict.hidden = false;
+      setTrigger("connected", "선택 필요");
+      setMessage("클라우드 데이터와 현재 기기 데이터 중 사용할 항목을 선택하세요.");
     } catch (error) {
-      setTrigger("error", "동기화 오류");
-      setMessage(`클라우드 연결 오류: ${error.message}`, "error");
+      setTrigger("error", "연결 오류");
+      setMessage(`동기화 키 연결 실패: ${error.message}`, "error");
     }
   }
 
-  async function checkForRemoteUpdate() {
-    if (!session?.user || document.visibilityState !== "visible") return;
-    try {
-      const row = await fetchRemote();
-      const lastRemote = localStorage.getItem(LAST_REMOTE_KEY) || "";
-      if (row?.updated_at && row.updated_at > lastRemote) await downloadRemote();
-    } catch {
-      setTrigger("error", "동기화 오류");
-    }
+  function generateKey() {
+    const bytes = new Uint8Array(18);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
   }
 
   Storage.prototype.setItem = function patchedSetItem(key, value) {
     originalSetItem.call(this, key, value);
     if (this === localStorage && isAppKey(key)) scheduleUpload();
   };
+
   Storage.prototype.removeItem = function patchedRemoveItem(key) {
     originalRemoveItem.call(this, key);
     if (this === localStorage && isAppKey(key)) scheduleUpload();
   };
 
   async function init() {
-    elements.trigger = byId("cloudSyncTrigger");
-    elements.triggerText = byId("cloudSyncTriggerText");
-    elements.dialog = byId("cloudSyncDialog");
-    elements.close = byId("cloudSyncClose");
-    elements.signedOut = byId("cloudSyncSignedOut");
-    elements.signedIn = byId("cloudSyncSignedIn");
-    elements.form = byId("cloudSyncLoginForm");
-    elements.email = byId("cloudSyncEmail");
-    elements.userEmail = byId("cloudSyncUserEmail");
-    elements.message = byId("cloudSyncMessage");
-    elements.conflict = byId("cloudSyncConflict");
-    elements.download = byId("cloudSyncDownload");
-    elements.upload = byId("cloudSyncUpload");
-    elements.logout = byId("cloudSyncLogout");
+    elements = {
+      trigger: byId("cloudSyncTrigger"), triggerText: byId("cloudSyncTriggerText"),
+      dialog: byId("cloudSyncDialog"), close: byId("cloudSyncClose"),
+      signedOut: byId("cloudSyncSignedOut"), signedIn: byId("cloudSyncSignedIn"),
+      form: byId("cloudSyncLoginForm"), keyInput: byId("cloudSyncKey"),
+      generate: byId("cloudSyncGenerate"), keyDisplay: byId("cloudSyncKeyDisplay"),
+      copy: byId("cloudSyncCopy"), message: byId("cloudSyncMessage"),
+      conflict: byId("cloudSyncConflict"), download: byId("cloudSyncDownload"),
+      upload: byId("cloudSyncUpload"), logout: byId("cloudSyncLogout"),
+    };
 
     if (!window.supabase?.createClient) {
       setTrigger("error", "연결 실패");
       return;
     }
-    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
-    elements.trigger.addEventListener("click", () => {
-      setMessage("");
-      elements.dialog.showModal();
-    });
+    elements.trigger.addEventListener("click", () => { setMessage(""); elements.dialog.showModal(); });
     elements.close.addEventListener("click", () => elements.dialog.close());
-    elements.dialog.addEventListener("click", (event) => {
-      if (event.target === elements.dialog) elements.dialog.close();
+    elements.dialog.addEventListener("click", (event) => { if (event.target === elements.dialog) elements.dialog.close(); });
+    elements.form.addEventListener("submit", (event) => { event.preventDefault(); connectKey(elements.keyInput.value); });
+    elements.generate.addEventListener("click", async () => {
+      const key = generateKey();
+      elements.keyInput.value = key;
+      await connectKey(key);
     });
-    elements.form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const email = elements.email.value.trim();
-      if (!email) return;
-      setMessage("로그인 링크를 전송하고 있습니다.");
-      const redirectTo = `${location.origin}${location.pathname}`;
-      const { error } = await client.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
-      });
-      if (error) {
-        setMessage(`로그인 링크 전송 실패: ${error.message}`, "error");
-        return;
-      }
-      setMessage("이메일로 로그인 링크를 보냈습니다. 같은 브라우저에서 링크를 열어주세요.", "success");
+    elements.copy.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(syncKey);
+      setMessage("동기화 키를 복사했습니다.", "success");
     });
     elements.download.addEventListener("click", () => downloadRemote().catch((error) => setMessage(error.message, "error")));
     elements.upload.addEventListener("click", () => uploadLocal().catch(() => {}));
-    elements.logout.addEventListener("click", async () => {
-      await client.auth.signOut();
-      elements.dialog.close();
+    elements.logout.addEventListener("click", () => {
+      syncKey = "";
+      clearInterval(pollTimer);
+      originalRemoveItem.call(localStorage, SYNC_KEY_STORAGE);
+      originalRemoveItem.call(localStorage, LAST_REMOTE_STORAGE);
+      renderConnection();
+      setMessage("이 기기의 동기화 연결을 해제했습니다.");
     });
-    document.addEventListener("visibilitychange", checkForRemoteUpdate);
-    window.addEventListener("focus", checkForRemoteUpdate);
+    window.addEventListener("focus", pollRemote);
+    document.addEventListener("visibilitychange", pollRemote);
 
-    const { data } = await client.auth.getSession();
-    await initializeSession(data.session);
-    client.auth.onAuthStateChange((_event, nextSession) => {
-      window.setTimeout(() => initializeSession(nextSession), 0);
-    });
+    syncKey = localStorage.getItem(SYNC_KEY_STORAGE) || "";
+    renderConnection();
+    if (syncKey) {
+      startPolling();
+      await pollRemote();
+    }
   }
 
-  init().catch((error) => {
-    console.error("Cloud sync initialization failed", error);
-  });
+  init().catch((error) => console.error("Cloud sync initialization failed", error));
 })();
