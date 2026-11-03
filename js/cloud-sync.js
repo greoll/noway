@@ -6,6 +6,7 @@
   const DATA_PREFIX = "mabinogi-";
   const SYNC_KEY_STORAGE = "cloud-sync-shared-key";
   const LAST_REMOTE_STORAGE = "cloud-sync-last-remote";
+  const TABLE = "shared_app_state";
   const POLL_INTERVAL = 2500;
   const originalSetItem = Storage.prototype.setItem;
   const originalRemoveItem = Storage.prototype.removeItem;
@@ -72,9 +73,13 @@
 
   async function fetchRemote() {
     if (!syncKey) return null;
-    const { data, error } = await client.rpc("get_shared_app_state", { p_sync_key: syncKey });
+    const { data, error } = await client
+      .from(TABLE)
+      .select("state, updated_at")
+      .eq("sync_id", syncKey)
+      .maybeSingle();
     if (error) throw error;
-    return Array.isArray(data) ? data[0] || null : data || null;
+    return data || null;
   }
 
   async function uploadLocal({ announce = true } = {}) {
@@ -84,13 +89,19 @@
     setTrigger("syncing", "저장 중");
     if (announce) setMessage("현재 기기의 데이터를 저장하고 있습니다.");
     try {
-      const { data, error } = await client.rpc("save_shared_app_state", {
-        p_sync_key: syncKey,
-        p_state: collectState(),
-      });
+      const updatedAt = new Date().toISOString();
+      const { data, error } = await client
+        .from(TABLE)
+        .upsert({
+          sync_id: syncKey,
+          state: collectState(),
+          updated_at: updatedAt,
+        }, { onConflict: "sync_id" })
+        .select("updated_at")
+        .single();
       if (error) throw error;
-      const updatedAt = Array.isArray(data) ? data[0]?.updated_at : data?.updated_at || data;
-      if (updatedAt) originalSetItem.call(localStorage, LAST_REMOTE_STORAGE, String(updatedAt));
+      const savedAt = data?.updated_at || updatedAt;
+      originalSetItem.call(localStorage, LAST_REMOTE_STORAGE, String(savedAt));
       elements.conflict.hidden = true;
       setTrigger("connected", "동기화 연결됨");
       if (announce) setMessage("현재 기기 데이터를 저장했습니다.", "success");
