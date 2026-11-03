@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>새 탭</title>
     <link rel="stylesheet" href="./css/styles.css?v=20261103-1" />
-    <link rel="stylesheet" href="./css/cloud-sync.css?v=20261103-1" />
+    <link rel="stylesheet" href="./css/cloud-sync.css?v=20261103-2" />
     <link rel="stylesheet" href="./css/enchant.css?v=20261103-1" />
     <link rel="stylesheet" href="./css/crafting.css?v=20261103-1" />
     <link rel="stylesheet" href="./css/rune.css?v=20261103-1" />
@@ -1398,19 +1398,20 @@
           <button type="button" id="cloudSyncClose" aria-label="닫기">×</button>
         </header>
         <section id="cloudSyncSignedOut">
-          <p>같은 이메일로 로그인하면 PC와 모바일에서 입력값을 함께 사용할 수 있습니다.</p>
+          <p>PC와 모바일에 같은 동기화 키를 입력하면 별도 로그인 없이 입력값을 함께 사용할 수 있습니다.</p>
           <form id="cloudSyncLoginForm">
-            <label for="cloudSyncEmail">이메일</label>
+            <label for="cloudSyncKey">동기화 키</label>
             <div>
-              <input id="cloudSyncEmail" type="email" autocomplete="email" required placeholder="example@email.com" />
-              <button type="submit">로그인 링크 받기</button>
+              <input id="cloudSyncKey" type="text" autocomplete="off" required minlength="12" placeholder="다른 기기와 동일한 키 입력" />
+              <button type="submit">연결</button>
             </div>
+            <button type="button" class="cloud-sync-generate" id="cloudSyncGenerate">새 동기화 키 만들기</button>
           </form>
         </section>
         <section id="cloudSyncSignedIn" hidden>
           <div class="cloud-sync-account">
-            <span>로그인 계정</span>
-            <strong id="cloudSyncUserEmail"></strong>
+            <span>연결된 동기화 키</span>
+            <div><strong id="cloudSyncKeyDisplay"></strong><button type="button" id="cloudSyncCopy">복사</button></div>
           </div>
           <div class="cloud-sync-conflict" id="cloudSyncConflict" hidden>
             <strong>이 기기와 클라우드에 각각 저장된 데이터가 있습니다.</strong>
@@ -1420,14 +1421,14 @@
             <button type="button" class="primary" id="cloudSyncDownload">클라우드 데이터 불러오기</button>
             <button type="button" id="cloudSyncUpload">현재 기기 데이터를 저장</button>
           </div>
-          <button type="button" class="cloud-sync-logout" id="cloudSyncLogout">로그아웃</button>
+          <button type="button" class="cloud-sync-logout" id="cloudSyncLogout">연결 해제</button>
         </section>
         <p class="cloud-sync-message" id="cloudSyncMessage" role="status"></p>
       </div>
     </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="./js/cloud-sync.js?v=20261103-2" defer></script>
+    <script src="./js/cloud-sync.js?v=20261103-3" defer></script>
     <script src="./js/rune-data.js" defer></script>
     <script src="./js/rune.js" defer></script>
     <script src="./js/crafting-data.js" defer></script>
