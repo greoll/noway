@@ -1270,7 +1270,7 @@
   }
   .scroll-craft-page .plan-table tbody th {
     position: static !important;
-    width: 46% !important;
+    width: 38% !important;
     min-width: 0 !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th {
@@ -1279,7 +1279,7 @@
     min-width: 0 !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:first-child {
-    width: 46% !important;
+    width: 38% !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(2) {
     width: 13% !important;
@@ -1288,11 +1288,11 @@
     width: 15% !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(4) {
-    width: 26% !important;
+    width: 34% !important;
   }
   .scroll-craft-page .plan-table tbody td.editable { width: 13% !important; min-width: 0 !important; }
   .scroll-craft-page .plan-table tbody td.product-total { width: 15% !important; min-width: 0 !important; }
-  .scroll-craft-page .plan-table tbody td.plan-total-materials { width: 26% !important; min-width: 0 !important; }
+  .scroll-craft-page .plan-table tbody td.plan-total-materials { width: 34% !important; min-width: 0 !important; }
   .scroll-craft-page .plan-table th,
   .scroll-craft-page .plan-table td {
     min-width: 0;
@@ -1342,14 +1342,15 @@
     white-space: normal;
   }
   .scroll-craft-page .plan-total-materials > span {
-    display: flex;
-    width: fit-content;
+    display: grid;
+    width: 100%;
     max-width: 100%;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: center;
-    gap: 7px;
+    gap: 5px;
     margin: 2px auto;
-    padding: 3px 4px;
+    padding: 3px 5px;
+    box-sizing: border-box;
   }
   .scroll-craft-page .plan-total-materials > span b {
     font-size: 10px !important;
@@ -1357,9 +1358,11 @@
     white-space: normal;
     overflow-wrap: normal;
     word-break: keep-all;
+    text-align: left;
   }
   .scroll-craft-page .plan-total-materials > span strong {
     flex: 0 0 auto;
     font-size: 10px !important;
+    text-align: right;
   }
 }
