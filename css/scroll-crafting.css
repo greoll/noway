@@ -222,8 +222,8 @@
 }
 .scroll-craft-table input:focus,
 .scroll-material-numbers input:focus {
-  box-shadow: inset 0 0 0 2px #ffe07c;
-  background: rgba(255, 214, 87, 0.12);
+  box-shadow: inset 0 -3px 0 #ffe07c;
+  background: rgba(255, 214, 87, 0.08);
 }
 .scroll-craft-table input::-webkit-inner-spin-button,
 .scroll-craft-table input::-webkit-outer-spin-button,
