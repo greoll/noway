@@ -1,0 +1,60 @@
+.cloud-sync-trigger {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid rgba(112, 223, 203, 0.3);
+  border-radius: 9px;
+  color: #c9d6e8;
+  background: rgba(16, 29, 49, 0.92);
+  font: 850 12px/1 inherit;
+  cursor: pointer;
+}
+.cloud-sync-trigger:hover { border-color: rgba(112, 223, 203, 0.65); }
+.cloud-sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #76859d; }
+.cloud-sync-trigger.connected .cloud-sync-dot { background: #65dfbe; box-shadow: 0 0 0 3px rgba(101, 223, 190, 0.12); }
+.cloud-sync-trigger.syncing .cloud-sync-dot { background: #ffd06d; animation: cloud-sync-pulse 0.9s infinite alternate; }
+.cloud-sync-trigger.error .cloud-sync-dot { background: #ff826f; }
+@keyframes cloud-sync-pulse { to { opacity: 0.35; } }
+
+.cloud-sync-dialog {
+  width: min(92vw, 520px);
+  max-height: 88vh;
+  padding: 0;
+  border: 1px solid rgba(125, 153, 197, 0.28);
+  border-radius: 16px;
+  color: #eaf2fc;
+  background: #111c30;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+}
+.cloud-sync-dialog::backdrop { background: rgba(4, 9, 18, 0.75); backdrop-filter: blur(3px); }
+.cloud-sync-modal > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px; border-bottom: 1px solid rgba(125, 153, 197, 0.16); background: #19273f; }
+.cloud-sync-modal > header span { color: #69dfc0; font-size: 11px; font-weight: 900; }
+.cloud-sync-modal > header h2 { margin: 3px 0 0; font-size: 20px; }
+.cloud-sync-modal > header button { width: 34px; height: 34px; border: 0; border-radius: 8px; color: #a9b6c9; background: rgba(255,255,255,0.05); font-size: 24px; cursor: pointer; }
+.cloud-sync-modal > section { padding: 18px; }
+.cloud-sync-modal > section > p { margin: 0 0 15px; color: #a7b4c7; font-size: 13px; line-height: 1.55; }
+#cloudSyncLoginForm label { display: block; margin-bottom: 7px; color: #dce6f4; font-size: 12px; font-weight: 850; }
+#cloudSyncLoginForm > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+#cloudSyncLoginForm input { min-width: 0; height: 42px; padding: 0 11px; border: 1px solid rgba(125,153,197,.3); border-radius: 8px; outline: 0; color: #eef5ff; background: #0c1628; font-size: 14px; }
+#cloudSyncLoginForm input:focus { border-color: #67dfbe; }
+#cloudSyncLoginForm button, .cloud-sync-actions button { min-height: 42px; padding: 0 13px; border: 1px solid rgba(112,223,203,.3); border-radius: 8px; color: #091817; background: #6de0c3; font-weight: 900; cursor: pointer; }
+.cloud-sync-account { display: grid; gap: 4px; padding: 11px 13px; border-radius: 9px; background: rgba(112,137,178,.09); }
+.cloud-sync-account span { color: #8393aa; font-size: 11px; }
+.cloud-sync-account strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; }
+.cloud-sync-conflict { margin-top: 11px; padding: 11px 13px; border-left: 3px solid #ffd06d; border-radius: 7px; background: rgba(255,192,69,.08); }
+.cloud-sync-conflict strong { color: #ffdc83; font-size: 13px; }
+.cloud-sync-conflict p { margin: 5px 0 0; color: #aeb9ca; font-size: 12px; line-height: 1.45; }
+.cloud-sync-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.cloud-sync-actions button:not(.primary) { color: #dce7f5; background: #1a2942; }
+.cloud-sync-logout { display: block; margin: 14px 0 0 auto; border: 0; color: #8797ae; background: transparent; font-size: 12px; cursor: pointer; }
+.cloud-sync-message { min-height: 20px; margin: 0; padding: 0 18px 15px; color: #8fa0b7; font-size: 12px; }
+.cloud-sync-message.success { color: #69dfbf; }
+.cloud-sync-message.error { color: #ff9887; }
+
+@media (max-width: 680px) {
+  .cloud-sync-trigger { min-height: 34px; padding-inline: 9px; }
+  #cloudSyncLoginForm > div, .cloud-sync-actions { grid-template-columns: 1fr; }
+  .cloud-sync-dialog { width: calc(100vw - 20px); }
+}
