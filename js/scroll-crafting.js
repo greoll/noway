@@ -403,6 +403,7 @@
 
   function renderPlan() {
     const activeIndexes = activeClassIndexes();
+    const isMobile = window.matchMedia("(max-width: 760px)").matches;
     document.getElementById("scrollCraftPlanBody").innerHTML =
       orderedPlanIndexes()
         .map((planIndex) => {
@@ -419,6 +420,15 @@
               return `<span class="${stock < total ? "short" : "enough"}"><b>${materialName}</b><strong>${fmt(total)} / ${fmt(stock)}</strong></span>`;
             })
             .join("");
+          if (isMobile) {
+            const classIndex = activeIndexes[0];
+            return `<tr>
+        <th scope="row"><div class="scroll-plan-product"><b>${formatPlanName(plan.name)}</b></div></th>
+        <td class="editable"><label><span class="sr-only">${plan.name} ${classes[classIndex]}</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"></label></td>
+        <td class="product-total"><strong>${fmt(productCount)}</strong><small>개</small></td>
+        <td class="plan-total-materials">${materialSummary}</td>
+      </tr>`;
+          }
           return `<tr>
         <td class="rank">${planIndex + 1}</td>
         <th scope="row"><div class="scroll-plan-product"><span class="difficulty ${plan.difficulty === "어려움" ? "hard" : "easy"}">${plan.difficulty}</span><span class="plan-category">${plan.category}</span><b>${formatPlanName(plan.name)}</b></div></th>
