@@ -1269,22 +1269,30 @@
     display: none;
   }
   .scroll-craft-page .plan-table tbody th {
-    position: static;
-    width: 42%;
-    min-width: 0;
+    position: static !important;
+    width: 46% !important;
+    min-width: 0 !important;
+  }
+  .scroll-craft-page .plan-table thead .mobile-plan-head th {
+    position: static !important;
+    left: auto !important;
+    min-width: 0 !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:first-child {
-    width: 42%;
+    width: 46% !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(2) {
-    width: 13%;
+    width: 13% !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(3) {
-    width: 15%;
+    width: 15% !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(4) {
-    width: 30%;
+    width: 26% !important;
   }
+  .scroll-craft-page .plan-table tbody td.editable { width: 13% !important; min-width: 0 !important; }
+  .scroll-craft-page .plan-table tbody td.product-total { width: 15% !important; min-width: 0 !important; }
+  .scroll-craft-page .plan-table tbody td.plan-total-materials { width: 26% !important; min-width: 0 !important; }
   .scroll-craft-page .plan-table th,
   .scroll-craft-page .plan-table td {
     min-width: 0;
@@ -1330,21 +1338,25 @@
   }
   .scroll-craft-page .plan-total-materials {
     min-width: 0;
+    text-align: center;
     white-space: normal;
   }
   .scroll-craft-page .plan-total-materials > span {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
+    width: fit-content;
+    max-width: 100%;
     align-items: center;
-    gap: 3px;
-    margin: 2px 0;
+    justify-content: center;
+    gap: 7px;
+    margin: 2px auto;
     padding: 3px 4px;
   }
   .scroll-craft-page .plan-total-materials > span b {
     font-size: 10px !important;
     line-height: 1.2;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
+    word-break: keep-all;
   }
   .scroll-craft-page .plan-total-materials > span strong {
     flex: 0 0 auto;
