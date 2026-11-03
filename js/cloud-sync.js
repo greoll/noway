@@ -16,6 +16,9 @@
   let uploadTimer = 0;
   let applyingRemote = false;
   let initializedUserId = null;
+  let realtimeChannel = null;
+  let pendingUploadAt = "";
+  let realtimeReloadTimer = 0;
 
   const elements = {};
   const byId = (id) => document.getElementById(id);
@@ -90,12 +93,14 @@
     setTrigger("syncing", "저장 중");
     if (announce) setMessage("현재 기기의 데이터를 저장하고 있습니다.");
     const updatedAt = new Date().toISOString();
+    pendingUploadAt = updatedAt;
     const { error } = await client.from(TABLE).upsert({
       user_id: session.user.id,
       state: collectState(),
       updated_at: updatedAt,
     }, { onConflict: "user_id" });
     if (error) {
+      pendingUploadAt = "";
       setTrigger("error", "동기화 오류");
       setMessage(`저장하지 못했습니다: ${error.message}`, "error");
       throw error;
@@ -106,6 +111,9 @@
     elements.conflict.hidden = true;
     setTrigger("connected", "동기화됨");
     if (announce) setMessage("현재 기기의 데이터를 클라우드에 저장했습니다.", "success");
+    window.setTimeout(() => {
+      if (pendingUploadAt === updatedAt) pendingUploadAt = "";
+    }, 1500);
   }
 
   function scheduleUpload() {
@@ -132,17 +140,65 @@
     if (reload) window.setTimeout(() => location.reload(), 250);
   }
 
+  async function stopRealtime() {
+    clearTimeout(realtimeReloadTimer);
+    if (!realtimeChannel || !client) return;
+    const channel = realtimeChannel;
+    realtimeChannel = null;
+    await client.removeChannel(channel);
+  }
+
+  function startRealtime() {
+    if (!session?.user || realtimeChannel) return;
+    realtimeChannel = client
+      .channel(`user-app-state-${session.user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: TABLE,
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        (payload) => {
+          const next = payload.new;
+          if (!next?.updated_at) return;
+          if (pendingUploadAt && Math.abs(Date.parse(next.updated_at) - Date.parse(pendingUploadAt)) < 3000) return;
+          const lastRemote = localStorage.getItem(LAST_REMOTE_KEY) || "";
+          if (next.updated_at <= lastRemote) return;
+          remoteRow = next;
+          applyState(next.state);
+          originalSetItem.call(localStorage, DEVICE_USER_KEY, session.user.id);
+          originalSetItem.call(localStorage, LAST_REMOTE_KEY, next.updated_at);
+          setTrigger("syncing", "변경 감지");
+          setMessage("다른 기기의 변경사항을 적용합니다.", "success");
+          clearTimeout(realtimeReloadTimer);
+          realtimeReloadTimer = window.setTimeout(() => location.reload(), 350);
+        },
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") setTrigger("connected", "실시간 동기화");
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          setTrigger("error", "실시간 연결 오류");
+        }
+      });
+  }
+
   async function initializeSession(nextSession) {
+    const previousUserId = session?.user?.id || null;
     session = nextSession;
     renderAuth();
     if (!session?.user) {
+      await stopRealtime();
       initializedUserId = null;
       remoteRow = null;
       elements.conflict.hidden = true;
       return;
     }
     if (initializedUserId === session.user.id) return;
+    if (previousUserId && previousUserId !== session.user.id) await stopRealtime();
     initializedUserId = session.user.id;
+    startRealtime();
     try {
       const row = await fetchRemote();
       const knownDevice = localStorage.getItem(DEVICE_USER_KEY) === session.user.id;
