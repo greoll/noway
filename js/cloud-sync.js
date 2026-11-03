@@ -17,6 +17,7 @@
   let pollTimer = 0;
   let applyingRemote = false;
   let pendingUpload = false;
+  let bootstrapping = true;
   let elements = {};
 
   const byId = (id) => document.getElementById(id);
@@ -33,6 +34,14 @@
 
   function hasLocalState() {
     return Object.keys(collectState()).length > 0;
+  }
+
+  function stateMatchesLocal(remoteState) {
+    const localState = collectState();
+    const localKeys = Object.keys(localState).sort();
+    const remoteKeys = Object.keys(remoteState || {}).sort();
+    return localKeys.length === remoteKeys.length
+      && localKeys.every((key, index) => key === remoteKeys[index] && localState[key] === remoteState[key]);
   }
 
   function setMessage(message = "", type = "") {
@@ -115,7 +124,7 @@
   }
 
   function scheduleUpload() {
-    if (!syncKey || applyingRemote) return;
+    if (!syncKey || applyingRemote || bootstrapping) return;
     clearTimeout(uploadTimer);
     uploadTimer = window.setTimeout(() => uploadLocal({ announce: false }).catch(() => {}), 900);
   }
@@ -144,6 +153,11 @@
       if (!row?.updated_at) return;
       const lastRemote = localStorage.getItem(LAST_REMOTE_STORAGE) || "";
       if (new Date(row.updated_at).getTime() <= new Date(lastRemote || 0).getTime()) return;
+      if (stateMatchesLocal(row.state)) {
+        originalSetItem.call(localStorage, LAST_REMOTE_STORAGE, row.updated_at);
+        setTrigger("connected", "동기화 연결됨");
+        return;
+      }
       applyState(row.state);
       originalSetItem.call(localStorage, LAST_REMOTE_STORAGE, row.updated_at);
       setTrigger("syncing", "변경 감지");
@@ -198,13 +212,15 @@
   }
 
   Storage.prototype.setItem = function patchedSetItem(key, value) {
+    const previousValue = this === localStorage ? this.getItem(key) : null;
     originalSetItem.call(this, key, value);
-    if (this === localStorage && isAppKey(key)) scheduleUpload();
+    if (this === localStorage && isAppKey(key) && previousValue !== String(value)) scheduleUpload();
   };
 
   Storage.prototype.removeItem = function patchedRemoveItem(key) {
+    const existed = this === localStorage && this.getItem(key) !== null;
     originalRemoveItem.call(this, key);
-    if (this === localStorage && isAppKey(key)) scheduleUpload();
+    if (existed && isAppKey(key)) scheduleUpload();
   };
 
   async function init() {
@@ -259,6 +275,7 @@
       startPolling();
       await pollRemote();
     }
+    bootstrapping = false;
   }
 
   init().catch((error) => console.error("Cloud sync initialization failed", error));
