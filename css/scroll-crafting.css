@@ -1270,20 +1270,20 @@
   }
   .scroll-craft-page .plan-table tbody th {
     position: static;
-    width: 36%;
+    width: 42%;
     min-width: 0;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:first-child {
-    width: 36%;
+    width: 42%;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(2) {
-    width: 14%;
+    width: 13%;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(3) {
-    width: 16%;
+    width: 15%;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(4) {
-    width: 34%;
+    width: 30%;
   }
   .scroll-craft-page .plan-table th,
   .scroll-craft-page .plan-table td {
@@ -1309,11 +1309,10 @@
   }
   .scroll-plan-product b {
     display: block;
-    overflow: hidden;
+    overflow: visible;
     max-width: 100%;
     font-size: 12px !important;
     line-height: 1.25;
-    text-overflow: clip;
     white-space: normal;
     overflow-wrap: normal;
     word-break: keep-all;
@@ -1334,17 +1333,18 @@
     white-space: normal;
   }
   .scroll-craft-page .plan-total-materials > span {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
     gap: 3px;
     margin: 2px 0;
     padding: 3px 4px;
   }
   .scroll-craft-page .plan-total-materials > span b {
-    overflow: hidden;
     font-size: 10px !important;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .scroll-craft-page .plan-total-materials > span strong {
     flex: 0 0 auto;
