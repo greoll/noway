@@ -507,6 +507,53 @@
     renderMaterials(result);
   }
 
+  function commitEditable(input) {
+    const countInput = input.closest("[data-scroll-count]");
+    if (countInput) {
+      const [planIndex, classIndex] = countInput.dataset.scrollCount
+        .split(":")
+        .map(Number);
+      state.counts[planIndex][classIndex] = numericValue(countInput.value);
+      return;
+    }
+    const stockInput = input.closest("[data-material-stock]");
+    if (stockInput) {
+      state.stocks[stockInput.dataset.materialStock] = numericValue(
+        stockInput.value,
+      );
+    }
+  }
+
+  function editableKey(input) {
+    if (input.dataset?.scrollCount) {
+      return ["scrollCount", input.dataset.scrollCount];
+    }
+    if (input.dataset?.materialStock) {
+      return ["materialStock", input.dataset.materialStock];
+    }
+    return null;
+  }
+
+  function restoreEditable(key, select = false) {
+    if (!key) return;
+    const [datasetName, value] = key;
+    const next = [...document.querySelectorAll("[data-scroll-count], [data-material-stock]")]
+      .find((input) => input.dataset[datasetName] === value);
+    if (!next) return;
+    next.focus({ preventScroll: true });
+    if (select) next.select();
+  }
+
+  let pendingRender = 0;
+  function renderPreservingFocus() {
+    window.clearTimeout(pendingRender);
+    pendingRender = window.setTimeout(() => {
+      const key = editableKey(document.activeElement || {});
+      render();
+      restoreEditable(key);
+    }, 0);
+  }
+
   document.addEventListener("change", (event) => {
     if (event.target.id === "scrollCraftClassSelect") {
       state.singleClass = Number(event.target.value) || 0;
@@ -516,21 +563,16 @@
     }
     const countInput = event.target.closest("[data-scroll-count]");
     if (countInput) {
-      const [planIndex, classIndex] = countInput.dataset.scrollCount
-        .split(":")
-        .map(Number);
-      state.counts[planIndex][classIndex] = numericValue(countInput.value);
+      commitEditable(countInput);
       save();
-      render();
+      renderPreservingFocus();
       return;
     }
     const stockInput = event.target.closest("[data-material-stock]");
     if (stockInput) {
-      state.stocks[stockInput.dataset.materialStock] = numericValue(
-        stockInput.value,
-      );
+      commitEditable(stockInput);
       save();
-      render();
+      renderPreservingFocus();
     }
   });
 
@@ -552,12 +594,43 @@
   });
 
   document.addEventListener("keydown", (event) => {
-    if (
-      event.key === "Enter" &&
-      event.target.matches("[data-scroll-count], [data-material-stock]")
-    ) {
-      event.preventDefault();
-      event.target.blur();
+    const input = event.target.closest?.(
+      "[data-scroll-count], [data-material-stock]",
+    );
+    if (!input || !["Enter", "Tab"].includes(event.key)) return;
+
+    const inputs = [
+      ...document.querySelectorAll(
+        input.dataset.scrollCount
+          ? "[data-scroll-count]"
+          : "[data-material-stock]",
+      ),
+    ];
+    const currentIndex = inputs.indexOf(input);
+    let next = null;
+
+    if (event.key === "Enter" && input.dataset.scrollCount) {
+      const [, classIndex] = input.dataset.scrollCount.split(":");
+      const sameColumn = inputs.filter(
+        (item) => item.dataset.scrollCount.split(":")[1] === classIndex,
+      );
+      const columnIndex = sameColumn.indexOf(input);
+      next = sameColumn[columnIndex + (event.shiftKey ? -1 : 1)] || null;
+    } else {
+      next = inputs[currentIndex + (event.shiftKey ? -1 : 1)] || null;
+    }
+
+    event.preventDefault();
+    commitEditable(input);
+    save();
+    const nextKey = editableKey(next || input);
+    render();
+    restoreEditable(nextKey, true);
+  });
+
+  document.addEventListener("focusin", (event) => {
+    if (event.target.matches?.("[data-scroll-count], [data-material-stock]")) {
+      event.target.select();
     }
   });
 
