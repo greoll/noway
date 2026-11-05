@@ -3,6 +3,130 @@
   display: grid;
   gap: 16px;
 }
+
+/* 클릭 우선순위와 제작 가능/필요 수량 */
+.scroll-plan-product.priority-toggle {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.scroll-plan-product.priority-toggle:hover b {
+  color: #8cf0dc;
+}
+.scroll-craft-page .plan-table tbody tr.priority-selected > * {
+  background-color: rgba(63, 204, 175, 0.1) !important;
+  box-shadow: inset 0 1px rgba(112, 223, 203, 0.18),
+    inset 0 -1px rgba(112, 223, 203, 0.18);
+}
+.scroll-craft-page .plan-table tbody tr.priority-selected > *:first-child {
+  box-shadow: inset 3px 0 #70dfcb,
+    inset 0 1px rgba(112, 223, 203, 0.18),
+    inset 0 -1px rgba(112, 223, 203, 0.18);
+}
+.scroll-plan-sort .priority-clear {
+  margin-left: 5px;
+  color: #ffcf7d;
+  border-color: rgba(255, 190, 91, 0.32);
+}
+.scroll-plan-sort .priority-clear:hover:not(:disabled) {
+  color: #201504;
+  border-color: #ffd27d;
+  background: #ffd27d;
+}
+.scroll-plan-sort .priority-clear:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+.scroll-craft-page .plan-table .product-total {
+  white-space: nowrap;
+}
+.scroll-craft-page .plan-table .product-total .possible-count,
+.scroll-craft-page .plan-table .product-total .required-count {
+  font-size: 13px !important;
+}
+.scroll-craft-page .plan-table .product-total .possible-count {
+  color: #70dfcb;
+}
+.scroll-craft-page .plan-table .product-total .required-count {
+  color: #e6edf8;
+}
+.scroll-craft-page .plan-table .product-total .count-divider {
+  margin-inline: 4px;
+  color: #687992;
+  font-weight: 900;
+}
+.scroll-craft-page .plan-table tr.plan-partial .possible-count {
+  color: #ffd36e;
+}
+.scroll-craft-page .plan-table tr.plan-blocked .possible-count {
+  color: #ff8f82;
+}
+.scroll-craft-page .scroll-count-editor {
+  position: relative;
+  min-height: 28px;
+}
+.scroll-craft-page .scroll-count-editor input:not(:focus) {
+  opacity: 0;
+}
+.scroll-craft-page .scroll-count-display {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.scroll-craft-page .scroll-count-editor:focus-within .scroll-count-display {
+  visibility: hidden;
+}
+.scroll-craft-page .scroll-count-display b,
+.scroll-craft-page .scroll-count-display strong {
+  font-size: 12px;
+  font-weight: 950;
+}
+.scroll-craft-page .scroll-count-display b {
+  color: #70dfcb;
+}
+.scroll-craft-page .scroll-count-display strong {
+  color: #fff0a8;
+}
+.scroll-craft-page .scroll-count-display i {
+  color: #7c8798;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+.scroll-craft-page .scroll-count-editor.partial .scroll-count-display b {
+  color: #ffd36e;
+}
+.scroll-craft-page .scroll-count-editor.blocked .scroll-count-display b {
+  color: #ff8f82;
+}
+
+@media (max-width: 760px) {
+  .scroll-craft-page .plan-table .product-total .possible-count,
+  .scroll-craft-page .plan-table .product-total .required-count {
+    font-size: 11px !important;
+  }
+  .scroll-craft-page .plan-table .product-total .count-divider {
+    margin-inline: 2px;
+  }
+  .scroll-craft-page .scroll-count-display {
+    gap: 2px;
+  }
+  .scroll-craft-page .scroll-count-display b,
+  .scroll-craft-page .scroll-count-display strong {
+    font-size: 11px;
+  }
+}
+
 .scroll-craft-page[hidden] {
   display: none;
 }
