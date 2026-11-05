@@ -236,6 +236,7 @@
     scope: "all",
     singleClass: 1,
     planSort: "default",
+    priorityPlanIndexes: [],
     counts: plans.map((plan) => [...plan.counts]),
     stocks: Object.fromEntries(
       materials.map((material) => [material.name, material.stock]),
@@ -261,6 +262,11 @@
         planSort: ["default", "category", "difficulty"].includes(saved.planSort)
           ? saved.planSort
           : "default",
+        priorityPlanIndexes: Array.isArray(saved.priorityPlanIndexes)
+          ? [...new Set(saved.priorityPlanIndexes.map(Number))].filter(
+              (index) => Number.isInteger(index) && plans[index],
+            )
+          : [],
         counts: plans.map((plan, index) =>
           classes.map((_, classIndex) => {
             const value = saved.counts?.[index]?.[classIndex];
@@ -319,6 +325,9 @@
 
   function calculate() {
     const activeIndexes = activeClassIndexes();
+    const selectedPlans = state.priorityPlanIndexes.length
+      ? new Set(state.priorityPlanIndexes)
+      : null;
     const demand = Object.fromEntries(
       materials.map((material) => [
         material.name,
@@ -328,6 +337,7 @@
     let scrolls = 0;
     let products = 0;
     plans.forEach((plan, planIndex) => {
+      if (selectedPlans && !selectedPlans.has(planIndex)) return;
       const planCounts = state.counts[planIndex];
       scrolls += activeIndexes.reduce(
         (sum, classIndex) => sum + planCounts[classIndex],
@@ -351,6 +361,77 @@
         demand[material.name].total > (state.stocks[material.name] || 0),
     ).length;
     return { demand, scrolls, products, shortageCount };
+  }
+
+  function calculatePossibleCounts() {
+    const activeIndexes = activeClassIndexes();
+    const remaining = Object.fromEntries(
+      materials.map((material) => [
+        material.name,
+        Number(state.stocks[material.name]) || 0,
+      ]),
+    );
+    const byPlan = plans.map((plan, planIndex) => ({
+      requestedScrolls: activeIndexes.reduce(
+        (sum, classIndex) => sum + (state.counts[planIndex][classIndex] || 0),
+        0,
+      ),
+      possibleScrolls: 0,
+      possibleProducts: 0,
+      classes: {},
+    }));
+
+    const possibleFromStock = (planIndex, stock) => {
+      const plan = plans[planIndex];
+      const requested = byPlan[planIndex].requestedScrolls;
+      const recipe = recipes[plan.name] || [];
+      if (!recipe.length) return requested;
+      return Math.max(
+        0,
+        Math.min(
+          requested,
+          ...recipe.map(([materialName, amount]) =>
+            Math.floor(
+              ((stock[materialName] || 0) + 1e-9) / (amount * plan.yield),
+            ),
+          ),
+        ),
+      );
+    };
+
+    const distributeByClass = (planIndex, possibleScrolls) => {
+      let rest = possibleScrolls;
+      activeIndexes.forEach((classIndex) => {
+        const requested = state.counts[planIndex][classIndex] || 0;
+        const possible = Math.min(requested, rest);
+        byPlan[planIndex].classes[classIndex] = { requested, possible };
+        rest -= possible;
+      });
+    };
+
+    state.priorityPlanIndexes.forEach((planIndex) => {
+      const plan = plans[planIndex];
+      const possible = possibleFromStock(planIndex, remaining);
+      byPlan[planIndex].possibleScrolls = possible;
+      byPlan[planIndex].possibleProducts = possible * plan.yield;
+      distributeByClass(planIndex, possible);
+      (recipes[plan.name] || []).forEach(([materialName, amount]) => {
+        remaining[materialName] = Math.max(
+          0,
+          (remaining[materialName] || 0) - possible * plan.yield * amount,
+        );
+      });
+    });
+
+    plans.forEach((plan, planIndex) => {
+      if (state.priorityPlanIndexes.includes(planIndex)) return;
+      const possible = possibleFromStock(planIndex, remaining);
+      byPlan[planIndex].possibleScrolls = possible;
+      byPlan[planIndex].possibleProducts = possible * plan.yield;
+      distributeByClass(planIndex, possible);
+    });
+
+    return { byPlan, remaining };
   }
 
   function renderScope() {
@@ -385,8 +466,8 @@
       .join("");
     const materialClassHeads = state.scope === "all" ? classHeads : "";
     document.getElementById("scrollCraftPlanHead").innerHTML = isMobile
-      ? `<tr class="mobile-plan-head"><th scope="col">제작품</th><th scope="col">스크롤<br>개수</th><th scope="col">필요 제작<br>수량</th><th scope="col">필요 재료</th></tr>`
-      : `<tr class="plan-head-group"><th scope="col" rowspan="2">순</th><th scope="col" rowspan="2">제작품</th><th scope="col" rowspan="2" title="스크롤 1장을 사용했을 때 제작되는 개수">스크롤 1장당<br>제작 개수</th><th scope="colgroup" colspan="${indexes.length}" class="scroll-count-head">스크롤 개수</th><th scope="col" rowspan="2">필요 제작 수량</th><th scope="col" rowspan="2">총 필요 재료</th></tr><tr class="plan-head-classes">${classHeads}</tr>`;
+      ? `<tr class="mobile-plan-head"><th scope="col">제작품</th><th scope="col">스크롤<br>개수</th><th scope="col">가능 / 필요<br>수량</th><th scope="col">필요 재료</th></tr>`
+      : `<tr class="plan-head-group"><th scope="col" rowspan="2">순</th><th scope="col" rowspan="2">제작품</th><th scope="col" rowspan="2" title="스크롤 1장을 사용했을 때 제작되는 개수">스크롤 1장당<br>제작 개수</th><th scope="colgroup" colspan="${indexes.length}" class="scroll-count-head">스크롤 개수</th><th scope="col" rowspan="2">제작 가능 / 필요 수량</th><th scope="col" rowspan="2">총 필요 재료</th></tr><tr class="plan-head-classes">${classHeads}</tr>`;
     document.getElementById("scrollCraftMaterialHead").innerHTML =
       `<th scope="colgroup" colspan="2">수급처</th><th scope="col">재료</th><th scope="col" class="input-head">보유량</th><th scope="col">전체 필요</th><th scope="col">상태</th>${materialClassHeads}`;
   }
@@ -398,12 +479,13 @@
       ["difficulty", "난이도별"],
     ];
     document.getElementById("scrollPlanSort").innerHTML =
-      `<span>정렬</span>${options.map(([value, label]) => `<button type="button" data-plan-sort="${value}" class="${state.planSort === value ? "active" : ""}" aria-pressed="${state.planSort === value}">${label}</button>`).join("")}`;
+      `<span>정렬</span>${options.map(([value, label]) => `<button type="button" data-plan-sort="${value}" class="${state.planSort === value ? "active" : ""}" aria-pressed="${state.planSort === value}">${label}</button>`).join("")}<button type="button" class="priority-clear" data-priority-clear${state.priorityPlanIndexes.length ? "" : " disabled"}>우선순위 전체 해제</button>`;
   }
 
   function renderPlan() {
     const activeIndexes = activeClassIndexes();
     const isMobile = window.matchMedia("(max-width: 760px)").matches;
+    const possibleCounts = calculatePossibleCounts();
     document.getElementById("scrollCraftPlanBody").innerHTML =
       orderedPlanIndexes()
         .map((planIndex) => {
@@ -413,6 +495,19 @@
             (sum, classIndex) => sum + counts[classIndex] * plan.yield,
             0,
           );
+          const possible = possibleCounts.byPlan[planIndex];
+          const priorityIndex = state.priorityPlanIndexes.indexOf(planIndex);
+          const isPriority = priorityIndex >= 0;
+          const possibleClass =
+            productCount === 0
+              ? "empty"
+              : possible.possibleProducts >= productCount
+                ? "full"
+                : possible.possibleProducts > 0
+                  ? "partial"
+                  : "blocked";
+          const productName = `<button type="button" class="scroll-plan-product priority-toggle${isPriority ? " selected" : ""}" data-priority-plan="${planIndex}" aria-pressed="${isPriority}">`;
+          const productResult = `<strong class="possible-count">${fmt(possible.possibleProducts)}</strong><span class="count-divider">/</span><strong class="required-count">${fmt(productCount)}</strong><small>개</small>`;
           const materialSummary = (recipes[plan.name] || [])
             .map(([materialName, amount]) => {
               const total = amount * productCount;
@@ -420,21 +515,36 @@
               return `<span class="${stock < total ? "short" : "enough"}"><b>${materialName}</b><strong>${fmt(total)} / ${fmt(stock)}</strong></span>`;
             })
             .join("");
+          const scrollEditor = (classIndex) => {
+            const countResult = possible.classes[classIndex] || {
+              requested: counts[classIndex],
+              possible: 0,
+            };
+            const countClass =
+              countResult.requested === 0
+                ? "empty"
+                : countResult.possible >= countResult.requested
+                  ? "full"
+                  : countResult.possible > 0
+                    ? "partial"
+                    : "blocked";
+            return `<label class="scroll-count-editor ${countClass}"><span class="sr-only">${plan.name} ${classes[classIndex]}</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"><span class="scroll-count-display" aria-hidden="true"><b>${fmt(countResult.possible)}</b><i>/</i><strong>${fmt(countResult.requested)}</strong></span></label>`;
+          };
           if (isMobile) {
             const classIndex = activeIndexes[0];
-            return `<tr>
-        <th scope="row"><div class="scroll-plan-product"><b>${formatPlanName(plan.name)}</b></div></th>
-        <td class="editable"><label><span class="sr-only">${plan.name} ${classes[classIndex]}</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"></label></td>
-        <td class="product-total"><strong>${fmt(productCount)}</strong><small>개</small></td>
+            return `<tr class="plan-${possibleClass}${isPriority ? " priority-selected" : ""}">
+        <th scope="row">${productName}<b>${formatPlanName(plan.name)}</b></button></th>
+        <td class="editable">${scrollEditor(classIndex)}</td>
+        <td class="product-total">${productResult}</td>
         <td class="plan-total-materials">${materialSummary}</td>
       </tr>`;
           }
-          return `<tr>
+          return `<tr class="plan-${possibleClass}${isPriority ? " priority-selected" : ""}">
         <td class="rank">${planIndex + 1}</td>
-        <th scope="row"><div class="scroll-plan-product"><span class="difficulty ${plan.difficulty === "어려움" ? "hard" : "easy"}">${plan.difficulty}</span><span class="plan-category">${plan.category}</span><b>${formatPlanName(plan.name)}</b></div></th>
+        <th scope="row">${productName}<span class="difficulty ${plan.difficulty === "어려움" ? "hard" : "easy"}">${plan.difficulty}</span><span class="plan-category">${plan.category}</span><b>${formatPlanName(plan.name)}</b></button></th>
         <td class="yield">${fmt(plan.yield)}</td>
-        ${activeIndexes.map((classIndex) => `<td class="editable"><label><span class="sr-only">${plan.name} ${classes[classIndex]}</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"></label></td>`).join("")}
-        <td class="product-total"><strong>${fmt(productCount)}</strong><small>개</small></td>
+        ${activeIndexes.map((classIndex) => `<td class="editable">${scrollEditor(classIndex)}</td>`).join("")}
+        <td class="product-total">${productResult}</td>
         <td class="plan-total-materials">${materialSummary}</td>
       </tr>`;
         })
@@ -505,6 +615,14 @@
     renderPlanSort();
     renderPlan();
     renderMaterials(result);
+    const materialTitle = document.querySelector(
+      ".scroll-material-panel .scroll-craft-panel-head h3",
+    );
+    if (materialTitle) {
+      materialTitle.textContent = state.priorityPlanIndexes.length
+        ? `선택 재료 집계 (${state.priorityPlanIndexes.length})`
+        : "전체 재료 집계";
+    }
   }
 
   function commitEditable(input) {
@@ -577,6 +695,26 @@
   });
 
   document.addEventListener("click", (event) => {
+    const priorityButton = event.target.closest("[data-priority-plan]");
+    if (priorityButton) {
+      const planIndex = Number(priorityButton.dataset.priorityPlan);
+      const currentIndex = state.priorityPlanIndexes.indexOf(planIndex);
+      if (currentIndex >= 0) {
+        state.priorityPlanIndexes.splice(currentIndex, 1);
+      } else {
+        state.priorityPlanIndexes.push(planIndex);
+      }
+      save();
+      render();
+      return;
+    }
+    if (event.target.closest("[data-priority-clear]")) {
+      if (!state.priorityPlanIndexes.length) return;
+      state.priorityPlanIndexes = [];
+      save();
+      render();
+      return;
+    }
     const sortButton = event.target.closest("[data-plan-sort]");
     if (sortButton) {
       state.planSort = sortButton.dataset.planSort;
