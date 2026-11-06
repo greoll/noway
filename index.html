@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./css/crafting.css?v=20261103-1" />
     <link rel="stylesheet" href="./css/rune.css?v=20261103-1" />
     <link rel="stylesheet" href="./css/setup-analysis.css?v=20261103-1" />
-    <link rel="stylesheet" href="./css/scroll-crafting.css?v=20261105-5" />
+    <link rel="stylesheet" href="./css/scroll-crafting.css?v=20261106-5" />
   </head>
   <body>
     <main class="wrap">
@@ -343,6 +343,26 @@
               </thead>
               <tbody id="scrollCraftMaterialGrid"></tbody>
             </table>
+          </div>
+        </section>
+
+        <section class="scroll-craft-panel scroll-life-exp-panel" id="scrollLifeExpPanel">
+          <div class="scroll-craft-panel-head">
+            <div>
+              <span>03</span>
+              <h3>생활 경험치 예상</h3>
+            </div>
+            <p><b id="scrollLifeExpBasis">제작 가능 스크롤 기준</b> · 스크롤 1장 단위</p>
+          </div>
+          <div class="life-exp-grid">
+            <div class="life-exp-grid-head" aria-hidden="true">
+              <span>생활 항목</span>
+              <span>현재 레벨</span>
+              <span>현재 경험치</span>
+              <span>예상 획득</span>
+              <span>예상 결과</span>
+            </div>
+            <div id="scrollLifeExpGrid"></div>
           </div>
         </section>
       </section>
@@ -1433,7 +1453,7 @@
     <script src="./js/rune.js" defer></script>
     <script src="./js/crafting-data.js" defer></script>
     <script src="./js/crafting.js" defer></script>
-    <script src="./js/scroll-crafting.js?v=20261105-7" defer></script>
+    <script src="./js/scroll-crafting.js?v=20261106-7" defer></script>
     <script src="./js/enchant-data.js" defer></script>
     <script src="./js/enchant.js" defer></script>
     <script src="./js/misc.js" defer></script>
