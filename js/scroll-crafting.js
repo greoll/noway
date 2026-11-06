@@ -116,15 +116,24 @@
   ];
 
   const lifeCategories = [
-    ["중갑", "중갑제작"],
-    ["경갑", "경갑제작"],
-    ["천옷", "천옷제작"],
     ["대장기술", "대장기술"],
     ["목공", "목공"],
     ["매직크래프트", "매직크래프트"],
+    ["중갑", "중갑제작"],
+    ["경갑", "경갑제작"],
+    ["천옷", "천옷제작"],
     ["핸디크래프트", "핸디크래프트"],
   ];
   const lifeCategoryLabels = Object.fromEntries(lifeCategories);
+  const lifeCategoryGroups = {
+    대장기술: "무기",
+    목공: "무기",
+    매직크래프트: "무기",
+    중갑: "방어구",
+    경갑: "방어구",
+    천옷: "방어구",
+    핸디크래프트: "",
+  };
   const planExperiencePerScroll = {
     가죽갑옷신발S: 305,
     그랜드크로스보우: 358,
@@ -696,9 +705,19 @@
     const grid = document.getElementById("scrollLifeExpGrid");
     if (!grid) return;
     grid.innerHTML = lifeCategories
-      .map(([category, label]) => {
+      .map(([category, label], categoryIndex) => {
         const current = state.lifeProgress[category];
         const gain = gains[category];
+        const group = lifeCategoryGroups[category];
+        const previousGroup =
+          categoryIndex > 0
+            ? lifeCategoryGroups[lifeCategories[categoryIndex - 1][0]]
+            : null;
+        const groupClass = !group
+          ? " life-exp-item-single"
+          : group !== previousGroup
+            ? " life-exp-group-start"
+            : " life-exp-group-continued";
         const currentRequirement =
           current.level < 35 ? lifeRequiredExperience[current.level + 1] : null;
         const projected = projectLifeProgress(
@@ -707,15 +726,17 @@
           gain.experience,
         );
         const leveled = projected.level > current.level;
-        const resultText =
+        const currentText = `<span class="life-exp-before">Lv.${current.level} ${fmt(current.exp)}</span>`;
+        const projectedText =
           projected.level >= 35
-            ? `<b>Lv.${projected.level}</b><strong>MAX</strong>`
-            : `<b>Lv.${projected.level}</b><strong>${fmt(projected.experience)} / ${fmt(projected.requirement)}</strong>`;
+            ? `<span class="life-exp-after"><b>Lv.${projected.level}</b><strong>MAX</strong></span>`
+            : `<span class="life-exp-after"><b>Lv.${projected.level}</b><strong>${fmt(projected.experience)} / ${fmt(projected.requirement)}</strong></span>`;
+        const resultText = `<span class="life-exp-result-flow">${currentText}<i>→</i>${projectedText}</span>`;
         return `<div class="life-exp-row${leveled ? " leveled" : ""}">
-          <strong class="life-exp-category">${label}</strong>
+          <div class="life-exp-item${groupClass}"><span>${group}</span><strong class="life-exp-category">${label}</strong></div>
           <label class="life-exp-level"><span>현재 레벨</span><input type="text" inputmode="numeric" value="${current.level}" data-life-level="${category}"></label>
           <label class="life-exp-current"><span>현재 경험치</span><span class="life-exp-input-wrap"><input type="text" inputmode="numeric" value="${current.exp}" data-life-exp="${category}"><small>${currentRequirement ? `/ ${fmt(currentRequirement)}` : "MAX"}</small></span></label>
-          <div class="life-exp-gain"><span>예상 획득</span><b>+${fmt(gain.experience)}</b><small>${fmt(gain.scrolls)}장</small></div>
+          <div class="life-exp-gain"><span>예상 획득</span><small>${fmt(gain.scrolls)}장 제작</small><b>+${fmt(gain.experience)}</b></div>
           <div class="life-exp-result"><span>예상 결과</span>${resultText}</div>
         </div>`;
       })
