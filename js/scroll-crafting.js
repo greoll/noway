@@ -115,16 +115,49 @@
     },
   ];
 
-  const planNameBreaks = {
-    "가죽갑옷신발S": ["가죽", "갑옷신발S"],
-    "그랜드크로스보우": ["그랜드", "크로스보우"],
-    "두꺼운가죽갑옷신발": ["두꺼운", "가죽갑옷신발"],
-    "두꺼운전투복신발": ["두꺼운", "전투복신발"],
-    "로터스힐링완드": ["로터스", "힐링완드"],
-    "크레센트엣지소드": ["크레센트", "엣지소드"],
-    "라이트크로스보우S": ["라이트", "크로스보우S"],
+  const lifeCategories = [
+    ["중갑", "중갑제작"],
+    ["경갑", "경갑제작"],
+    ["천옷", "천옷제작"],
+    ["대장기술", "대장기술"],
+    ["목공", "목공"],
+    ["매직크래프트", "매직크래프트"],
+    ["핸디크래프트", "핸디크래프트"],
+  ];
+  const lifeCategoryLabels = Object.fromEntries(lifeCategories);
+  const planExperiencePerScroll = {
+    가죽갑옷신발S: 305,
+    그랜드크로스보우: 358,
+    두꺼운가죽갑옷신발: 268,
+    두꺼운전투복신발: 268,
+    라이트크로스보우S: 400,
+    로터스힐링완드: 358,
+    론엣지소드S: 400,
+    마법유탄부품: 319,
+    마블힐링완드S: 400,
+    비늘갑옷신발S: 305,
+    사슬갑옷신발: 268,
+    전문캠파키트: 279,
+    전투복신발S: 305,
+    크레센트엣지소드: 358,
   };
-  const formatPlanName = (name) => (planNameBreaks[name] || [name]).join("<wbr>");
+  const lifeRequiredExperience = [
+    0, 100, 120, 130, 140, 154, 250, 280, 310, 350, 450, 825, 945, 1065, 1545,
+    1725, 3175, 3450, 3725, 4875, 7825, 11340, 12180, 12670, 14210, 15925,
+    19880, 20480, 21040, 23280, 25280, 26960, 27480, 28040, 29520, 30040,
+  ];
+
+  const planNameBreaks = {
+    가죽갑옷신발S: ["가죽", "갑옷신발S"],
+    그랜드크로스보우: ["그랜드", "크로스보우"],
+    두꺼운가죽갑옷신발: ["두꺼운", "가죽갑옷신발"],
+    두꺼운전투복신발: ["두꺼운", "전투복신발"],
+    로터스힐링완드: ["로터스", "힐링완드"],
+    크레센트엣지소드: ["크레센트", "엣지소드"],
+    라이트크로스보우S: ["라이트", "크로스보우S"],
+  };
+  const formatPlanName = (name) =>
+    (planNameBreaks[name] || [name]).join("<wbr>");
 
   const recipes = {
     가죽갑옷신발S: [
@@ -241,6 +274,9 @@
     stocks: Object.fromEntries(
       materials.map((material) => [material.name, material.stock]),
     ),
+    lifeProgress: Object.fromEntries(
+      lifeCategories.map(([category]) => [category, { level: 1, exp: 0 }]),
+    ),
   });
 
   function loadState() {
@@ -259,7 +295,7 @@
               : Number(saved.singleClass) || 0,
           ),
         ),
-        planSort: ["default", "category", "difficulty"].includes(saved.planSort)
+        planSort: ["default", "category"].includes(saved.planSort)
           ? saved.planSort
           : "default",
         priorityPlanIndexes: Array.isArray(saved.priorityPlanIndexes)
@@ -286,6 +322,21 @@
             ];
           }),
         ),
+        lifeProgress: Object.fromEntries(
+          lifeCategories.map(([category]) => {
+            const progress = saved.lifeProgress?.[category] || {};
+            return [
+              category,
+              {
+                level: Math.min(
+                  35,
+                  Math.max(1, Math.floor(Number(progress.level) || 1)),
+                ),
+                exp: Math.max(0, Number(progress.exp) || 0),
+              },
+            ];
+          }),
+        ),
       };
     } catch {
       return base;
@@ -305,13 +356,6 @@
   const orderedPlanIndexes = () => {
     const indexes = plans.map((_, index) => index);
     if (state.planSort === "default") return indexes;
-    if (state.planSort === "difficulty") {
-      return indexes.sort(
-        (a, b) =>
-          Number(plans[a].difficulty === "어려움") -
-            Number(plans[b].difficulty === "어려움") || a - b,
-      );
-    }
     return indexes.sort((a, b) => {
       const categoryDifference =
         planCategoryOrder.indexOf(plans[a].category) -
@@ -466,8 +510,8 @@
       .join("");
     const materialClassHeads = state.scope === "all" ? classHeads : "";
     document.getElementById("scrollCraftPlanHead").innerHTML = isMobile
-      ? `<tr class="mobile-plan-head"><th scope="col">제작품</th><th scope="col">스크롤<br>개수</th><th scope="col">가능 / 필요<br>수량</th><th scope="col">필요 재료</th></tr>`
-      : `<tr class="plan-head-group"><th scope="col" rowspan="2">순</th><th scope="col" rowspan="2">제작품</th><th scope="col" rowspan="2" title="스크롤 1장을 사용했을 때 제작되는 개수">스크롤 1장당<br>제작 개수</th><th scope="colgroup" colspan="${indexes.length}" class="scroll-count-head">스크롤 개수</th><th scope="col" rowspan="2">제작 가능 / 필요 수량</th><th scope="col" rowspan="2">총 필요 재료</th></tr><tr class="plan-head-classes">${classHeads}</tr>`;
+      ? `<tr class="mobile-plan-head"><th scope="col">제작품</th><th scope="col">스크롤<br>개수</th><th scope="col">제작량<br>(가능/필요)</th><th scope="col">필요 재료</th></tr>`
+      : `<tr class="plan-head-group"><th scope="col" rowspan="2">순</th><th scope="col" rowspan="2">생활 구분</th><th scope="col" rowspan="2">제작품</th><th scope="col" rowspan="2" title="스크롤 1장을 사용했을 때 제작되는 개수">스크롤 1장당<br>제작 개수</th><th scope="colgroup" colspan="${indexes.length}" class="scroll-count-head">스크롤 개수</th><th scope="col" rowspan="2">제작량<br>(가능/전체)</th><th scope="col" rowspan="2">총 필요 재료</th></tr><tr class="plan-head-classes">${classHeads}</tr>`;
     document.getElementById("scrollCraftMaterialHead").innerHTML =
       `<th scope="colgroup" colspan="2">수급처</th><th scope="col">재료</th><th scope="col" class="input-head">보유량</th><th scope="col">전체 필요</th><th scope="col">상태</th>${materialClassHeads}`;
   }
@@ -475,8 +519,7 @@
   function renderPlanSort() {
     const options = [
       ["default", "기본 순서"],
-      ["category", "항목별"],
-      ["difficulty", "난이도별"],
+      ["category", "생활별"],
     ];
     document.getElementById("scrollPlanSort").innerHTML =
       `<span>정렬</span>${options.map(([value, label]) => `<button type="button" data-plan-sort="${value}" class="${state.planSort === value ? "active" : ""}" aria-pressed="${state.planSort === value}">${label}</button>`).join("")}<button type="button" class="priority-clear" data-priority-clear${state.priorityPlanIndexes.length ? "" : " disabled"}>우선순위 전체 해제</button>`;
@@ -507,7 +550,7 @@
                   ? "partial"
                   : "blocked";
           const productName = `<button type="button" class="scroll-plan-product priority-toggle${isPriority ? " selected" : ""}" data-priority-plan="${planIndex}" aria-pressed="${isPriority}">`;
-          const productResult = `<strong class="possible-count">${fmt(possible.possibleProducts)}</strong><span class="count-divider">/</span><strong class="required-count">${fmt(productCount)}</strong><small>개</small>`;
+          const productResult = `<strong class="possible-count">${fmt(possible.possibleProducts)}</strong><span class="count-divider">/</span><strong class="required-count">${fmt(productCount)}</strong><small></small>`;
           const materialSummary = (recipes[plan.name] || [])
             .map(([materialName, amount]) => {
               const total = amount * productCount;
@@ -540,8 +583,9 @@
       </tr>`;
           }
           return `<tr class="plan-${possibleClass}${isPriority ? " priority-selected" : ""}">
-        <td class="rank">${planIndex + 1}</td>
-        <th scope="row">${productName}<span class="difficulty ${plan.difficulty === "어려움" ? "hard" : "easy"}">${plan.difficulty}</span><span class="plan-category">${plan.category}</span><b>${formatPlanName(plan.name)}</b></button></th>
+        <td class="rank">${state.priorityPlanIndexes.length ? (isPriority ? priorityIndex + 1 : "-") : planIndex + 1}</td>
+        <td class="plan-life-category">${lifeCategoryLabels[plan.category] || plan.category}</td>
+        <th scope="row">${productName}<b>${formatPlanName(plan.name)}</b></button></th>
         <td class="yield">${fmt(plan.yield)}</td>
         ${activeIndexes.map((classIndex) => `<td class="editable">${scrollEditor(classIndex)}</td>`).join("")}
         <td class="product-total">${productResult}</td>
@@ -608,6 +652,82 @@
       .join("");
   }
 
+  function calculateLifeExperience() {
+    const selectedPlans = state.priorityPlanIndexes.length
+      ? new Set(state.priorityPlanIndexes)
+      : null;
+    const possibleCounts = calculatePossibleCounts();
+    const result = Object.fromEntries(
+      lifeCategories.map(([category]) => [
+        category,
+        { experience: 0, scrolls: 0 },
+      ]),
+    );
+
+    plans.forEach((plan, planIndex) => {
+      if (selectedPlans && !selectedPlans.has(planIndex)) return;
+      const scrollCount = possibleCounts.byPlan[planIndex].possibleScrolls;
+      result[plan.category].scrolls += scrollCount;
+      result[plan.category].experience +=
+        scrollCount * (planExperiencePerScroll[plan.name] || 0);
+    });
+    return result;
+  }
+
+  function projectLifeProgress(level, currentExperience, gainedExperience) {
+    let nextLevel = Math.min(35, Math.max(1, Math.floor(level || 1)));
+    let experience = Math.max(0, currentExperience || 0) + gainedExperience;
+    while (nextLevel < 35) {
+      const requirement = lifeRequiredExperience[nextLevel + 1];
+      if (experience < requirement) break;
+      experience -= requirement;
+      nextLevel += 1;
+    }
+    return {
+      level: nextLevel,
+      experience,
+      requirement:
+        nextLevel < 35 ? lifeRequiredExperience[nextLevel + 1] : null,
+    };
+  }
+
+  function renderLifeExperience() {
+    const gains = calculateLifeExperience();
+    const grid = document.getElementById("scrollLifeExpGrid");
+    if (!grid) return;
+    grid.innerHTML = lifeCategories
+      .map(([category, label]) => {
+        const current = state.lifeProgress[category];
+        const gain = gains[category];
+        const currentRequirement =
+          current.level < 35 ? lifeRequiredExperience[current.level + 1] : null;
+        const projected = projectLifeProgress(
+          current.level,
+          current.exp,
+          gain.experience,
+        );
+        const leveled = projected.level > current.level;
+        const resultText =
+          projected.level >= 35
+            ? `<b>Lv.${projected.level}</b><strong>MAX</strong>`
+            : `<b>Lv.${projected.level}</b><strong>${fmt(projected.experience)} / ${fmt(projected.requirement)}</strong>`;
+        return `<div class="life-exp-row${leveled ? " leveled" : ""}">
+          <strong class="life-exp-category">${label}</strong>
+          <label class="life-exp-level"><span>현재 레벨</span><input type="text" inputmode="numeric" value="${current.level}" data-life-level="${category}"></label>
+          <label class="life-exp-current"><span>현재 경험치</span><span class="life-exp-input-wrap"><input type="text" inputmode="numeric" value="${current.exp}" data-life-exp="${category}"><small>${currentRequirement ? `/ ${fmt(currentRequirement)}` : "MAX"}</small></span></label>
+          <div class="life-exp-gain"><span>예상 획득</span><b>+${fmt(gain.experience)}</b><small>${fmt(gain.scrolls)}장</small></div>
+          <div class="life-exp-result"><span>예상 결과</span>${resultText}</div>
+        </div>`;
+      })
+      .join("");
+    const basis = document.getElementById("scrollLifeExpBasis");
+    if (basis) {
+      basis.textContent = state.priorityPlanIndexes.length
+        ? `선택한 제작품 ${state.priorityPlanIndexes.length}종 · 제작 가능 스크롤 기준`
+        : "제작 가능 스크롤 기준";
+    }
+  }
+
   function render() {
     const result = calculate();
     renderScope();
@@ -615,6 +735,7 @@
     renderPlanSort();
     renderPlan();
     renderMaterials(result);
+    renderLifeExperience();
     const materialTitle = document.querySelector(
       ".scroll-material-panel .scroll-craft-panel-head h3",
     );
@@ -639,6 +760,22 @@
       state.stocks[stockInput.dataset.materialStock] = numericValue(
         stockInput.value,
       );
+      return;
+    }
+    const levelInput = input.closest("[data-life-level]");
+    if (levelInput) {
+      const category = levelInput.dataset.lifeLevel;
+      state.lifeProgress[category].level = Math.min(
+        35,
+        Math.max(1, Math.floor(numericValue(levelInput.value) || 1)),
+      );
+      return;
+    }
+    const experienceInput = input.closest("[data-life-exp]");
+    if (experienceInput) {
+      state.lifeProgress[experienceInput.dataset.lifeExp].exp = numericValue(
+        experienceInput.value,
+      );
     }
   }
 
@@ -649,14 +786,23 @@
     if (input.dataset?.materialStock) {
       return ["materialStock", input.dataset.materialStock];
     }
+    if (input.dataset?.lifeLevel) {
+      return ["lifeLevel", input.dataset.lifeLevel];
+    }
+    if (input.dataset?.lifeExp) {
+      return ["lifeExp", input.dataset.lifeExp];
+    }
     return null;
   }
 
   function restoreEditable(key, select = false) {
     if (!key) return;
     const [datasetName, value] = key;
-    const next = [...document.querySelectorAll("[data-scroll-count], [data-material-stock]")]
-      .find((input) => input.dataset[datasetName] === value);
+    const next = [
+      ...document.querySelectorAll(
+        "[data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
+      ),
+    ].find((input) => input.dataset[datasetName] === value);
     if (!next) return;
     next.focus({ preventScroll: true });
     if (select) next.select();
@@ -689,6 +835,15 @@
     const stockInput = event.target.closest("[data-material-stock]");
     if (stockInput) {
       commitEditable(stockInput);
+      save();
+      renderPreservingFocus();
+      return;
+    }
+    const lifeInput = event.target.closest(
+      "[data-life-level], [data-life-exp]",
+    );
+    if (lifeInput) {
+      commitEditable(lifeInput);
       save();
       renderPreservingFocus();
     }
@@ -733,7 +888,7 @@
 
   document.addEventListener("keydown", (event) => {
     const input = event.target.closest?.(
-      "[data-scroll-count], [data-material-stock]",
+      "[data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
     );
     if (!input || !["Enter", "Tab"].includes(event.key)) return;
 
@@ -741,7 +896,9 @@
       ...document.querySelectorAll(
         input.dataset.scrollCount
           ? "[data-scroll-count]"
-          : "[data-material-stock]",
+          : input.dataset.materialStock
+            ? "[data-material-stock]"
+            : "[data-life-level], [data-life-exp]",
       ),
     ];
     const currentIndex = inputs.indexOf(input);
@@ -752,6 +909,16 @@
       const sameColumn = inputs.filter(
         (item) => item.dataset.scrollCount.split(":")[1] === classIndex,
       );
+      const columnIndex = sameColumn.indexOf(input);
+      next = sameColumn[columnIndex + (event.shiftKey ? -1 : 1)] || null;
+    } else if (
+      event.key === "Enter" &&
+      (input.dataset.lifeLevel || input.dataset.lifeExp)
+    ) {
+      const selector = input.dataset.lifeLevel
+        ? "[data-life-level]"
+        : "[data-life-exp]";
+      const sameColumn = [...document.querySelectorAll(selector)];
       const columnIndex = sameColumn.indexOf(input);
       next = sameColumn[columnIndex + (event.shiftKey ? -1 : 1)] || null;
     } else {
@@ -767,7 +934,11 @@
   });
 
   document.addEventListener("focusin", (event) => {
-    if (event.target.matches?.("[data-scroll-count], [data-material-stock]")) {
+    if (
+      event.target.matches?.(
+        "[data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
+      )
+    ) {
       event.target.select();
     }
   });
