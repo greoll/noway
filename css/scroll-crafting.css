@@ -28,6 +28,10 @@
     inset 0 1px rgba(112, 223, 203, 0.18),
     inset 0 -1px rgba(112, 223, 203, 0.18);
 }
+.scroll-craft-page .plan-table tbody tr.priority-selected .rank {
+  color: #70dfcb;
+  font-weight: 950;
+}
 .scroll-plan-sort .priority-clear {
   margin-left: 5px;
   color: #ffcf7d;
@@ -53,17 +57,19 @@
   color: #70dfcb;
 }
 .scroll-craft-page .plan-table .product-total .required-count {
-  color: #e6edf8;
+  color: #70dfcb;
 }
 .scroll-craft-page .plan-table .product-total .count-divider {
   margin-inline: 4px;
   color: #687992;
   font-weight: 900;
 }
-.scroll-craft-page .plan-table tr.plan-partial .possible-count {
+.scroll-craft-page .plan-table tr.plan-partial .possible-count,
+.scroll-craft-page .plan-table tr.plan-partial .required-count {
   color: #ffd36e;
 }
-.scroll-craft-page .plan-table tr.plan-blocked .possible-count {
+.scroll-craft-page .plan-table tr.plan-blocked .possible-count,
+.scroll-craft-page .plan-table tr.plan-blocked .required-count {
   color: #ff8f82;
 }
 .scroll-craft-page .scroll-count-editor {
@@ -842,14 +848,33 @@
   background: #17243c;
 }
 .scroll-craft-page .plan-table thead tr:first-child > th:nth-child(2),
-.scroll-craft-page .plan-table tbody th {
+.scroll-craft-page .plan-table tbody .plan-life-category {
   position: sticky;
   z-index: 4;
   left: 34px;
+  width: 104px;
+  min-width: 104px;
   background: #141f34;
 }
 .scroll-craft-page .plan-table thead tr:first-child > th:nth-child(2) {
   background: #1a2740;
+}
+.scroll-craft-page .plan-table thead tr:first-child > th:nth-child(3),
+.scroll-craft-page .plan-table tbody th {
+  position: sticky;
+  z-index: 4;
+  left: 138px;
+  background: #141f34;
+}
+.scroll-craft-page .plan-table thead tr:first-child > th:nth-child(3) {
+  background: #1a2740;
+}
+.scroll-craft-page .plan-table tbody .plan-life-category {
+  color: #8fdcca;
+  font-size: 12px;
+  font-weight: 850;
+  text-align: center;
+  white-space: nowrap;
 }
 .scroll-craft-page .plan-table th,
 .scroll-craft-page .plan-table td {
@@ -867,14 +892,16 @@
 .scroll-craft-page .plan-table thead .plan-head-classes th {
   top: 25px;
   height: 28px;
+  color: #ffe291;
+  background: #332f21;
 }
 .scroll-craft-page .plan-table thead .scroll-count-head {
-  color: #70dfcb;
-  background: #16283b;
+  color: #ffe291;
+  background: #332f21;
   letter-spacing: 0.02em;
 }
 .scroll-craft-page .plan-table tbody th {
-  min-width: 250px;
+  min-width: 170px;
 }
 .scroll-plan-product {
   display: flex;
@@ -1389,6 +1416,7 @@
     table-layout: fixed;
   }
   .scroll-craft-page .plan-table tbody > tr > td:first-child,
+  .scroll-craft-page .plan-table tbody .plan-life-category,
   .scroll-craft-page .plan-table tbody .yield {
     display: none;
   }
@@ -1488,5 +1516,199 @@
     flex: 0 0 auto;
     font-size: 10px !important;
     text-align: right;
+  }
+}
+
+/* 생활 경험치 예상 */
+.scroll-craft-page .scroll-life-exp-panel {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+}
+.scroll-life-exp-panel .scroll-craft-panel-head p b {
+  color: #70dfcb;
+}
+.life-exp-grid {
+  width: 100%;
+  overflow: hidden;
+}
+.life-exp-grid-head,
+.life-exp-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.1fr) 90px minmax(180px, 1.15fr) 120px minmax(190px, 1.35fr);
+  align-items: center;
+}
+.life-exp-grid-head {
+  min-height: 38px;
+  color: #aab8cc;
+  background: #1a2740;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+.life-exp-grid-head > span,
+.life-exp-row > * {
+  box-sizing: border-box;
+  min-width: 0;
+  height: 100%;
+  border-right: 1px solid rgba(139, 163, 207, 0.1);
+}
+.life-exp-row {
+  min-height: 46px;
+  border-top: 1px solid rgba(139, 163, 207, 0.1);
+  color: #dce6f4;
+  font-size: 13px;
+}
+.life-exp-row:hover {
+  background: rgba(95, 218, 193, 0.04);
+}
+.life-exp-category {
+  display: flex;
+  align-items: center;
+  padding: 8px 13px;
+  color: #edf4ff;
+  font-size: 14px;
+}
+.life-exp-level,
+.life-exp-current,
+.life-exp-gain,
+.life-exp-result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 8px;
+}
+.life-exp-level > span,
+.life-exp-current > span:first-child,
+.life-exp-gain > span,
+.life-exp-result > span:first-child {
+  display: none;
+}
+.life-exp-row input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  color: #fff0a8;
+  background: rgba(255, 205, 91, 0.13);
+  font: 900 13px/1 inherit;
+  text-align: center;
+  appearance: textfield;
+}
+.life-exp-row input:focus {
+  box-shadow: inset 0 -3px #ffe07c;
+  background: rgba(255, 214, 87, 0.18);
+}
+.life-exp-level input {
+  max-width: 64px;
+}
+.life-exp-input-wrap {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(65px, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+}
+.life-exp-input-wrap small {
+  color: #8292aa;
+  font-size: 12px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.life-exp-gain b {
+  color: #70dfcb;
+  font-size: 14px;
+}
+.life-exp-gain small {
+  color: #7f90a9;
+  font-size: 11px;
+  font-weight: 850;
+}
+.life-exp-result b {
+  color: #eef5ff;
+  font-size: 14px;
+}
+.life-exp-result strong {
+  color: #9eb0c8;
+  font-size: 12px;
+}
+.life-exp-row.leveled .life-exp-result {
+  background: rgba(112, 223, 203, 0.07);
+}
+.life-exp-row.leveled .life-exp-result b,
+.life-exp-row.leveled .life-exp-result strong {
+  color: #70dfcb;
+}
+
+@media (max-width: 760px) {
+  .scroll-craft-page .scroll-life-exp-panel {
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+  }
+  .scroll-life-exp-panel .scroll-craft-panel-head p {
+    padding-left: 0 !important;
+  }
+  .life-exp-grid-head {
+    display: none;
+  }
+  .life-exp-row {
+    grid-template-columns: 92px 60px minmax(0, 1fr);
+    grid-template-areas:
+      "category level current"
+      "gain result result";
+    min-height: 82px;
+  }
+  .life-exp-category {
+    grid-area: category;
+    padding: 7px 8px;
+    font-size: 13px;
+  }
+  .life-exp-level {
+    grid-area: level;
+    padding: 5px 3px;
+  }
+  .life-exp-current {
+    grid-area: current;
+    padding: 5px 7px;
+    overflow: hidden;
+  }
+  .life-exp-gain {
+    grid-area: gain;
+    justify-content: flex-start;
+    padding: 6px 8px;
+    border-top: 1px solid rgba(139, 163, 207, 0.08);
+  }
+  .life-exp-result {
+    grid-area: result;
+    justify-content: flex-end;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+    padding: 6px 8px;
+    border-top: 1px solid rgba(139, 163, 207, 0.08);
+  }
+  .life-exp-row input {
+    height: 29px;
+    padding-inline: 4px;
+    font-size: 12px;
+  }
+  .life-exp-input-wrap {
+    grid-template-columns: minmax(0, 1fr) 58px;
+    gap: 5px;
+  }
+  .life-exp-input-wrap small {
+    font-size: 11px;
+    text-align: right;
+  }
+  .life-exp-result b,
+  .life-exp-result strong {
+    line-height: 1.15;
+    white-space: nowrap;
   }
 }
