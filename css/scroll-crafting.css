@@ -1703,9 +1703,11 @@
   align-items: center;
 }
 .life-exp-result-flow {
+  box-sizing: border-box;
   width: 100%;
   justify-content: flex-start;
   gap: 7px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.82);
   white-space: nowrap;
 }
 .life-exp-result {
@@ -1735,29 +1737,34 @@
   background: rgba(65, 231, 178, 0.38);
 }
 .life-exp-result-flow > i {
-  color: #7890ad;
+  color: #ffffff;
+  font-size: 13px;
   font-style: normal;
   font-weight: 950;
+  line-height: 1.2;
 }
 .life-exp-before {
-  color: #9eb0c8;
-  font-size: 12px;
+  color: #ffffff;
+  font-size: 13px;
   font-weight: 850;
+  line-height: 1.2;
 }
 .life-exp-after {
   gap: 5px;
 }
 .life-exp-result b {
-  color: #eef5ff;
-  font-size: 14px;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.2;
 }
 .life-exp-result strong {
-  color: #9eb0c8;
-  font-size: 12px;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.2;
 }
 .life-exp-row.leveled .life-exp-result b,
 .life-exp-row.leveled .life-exp-result strong {
-  color: #70dfcb;
+  color: #ffffff;
 }
 
 @media (max-width: 760px) {
@@ -1770,22 +1777,24 @@
   }
   .life-exp-grid-head {
     display: grid;
-    grid-template-columns: 26% 12% 34% 28%;
+    grid-template-columns: 40% 18% 42%;
     min-height: 36px;
   }
   .life-exp-grid-head > span {
     padding: 4px 2px;
     font-size: 10px;
   }
+  .life-exp-grid-head > span:nth-child(4),
   .life-exp-grid-head > span:nth-child(5) {
     display: none;
   }
   .life-exp-row {
-    grid-template-columns: 26% 12% 34% 28%;
+    grid-template-columns: 40% 18% 42%;
+    grid-template-rows: 42px 24px;
     grid-template-areas:
-      "category level current gain"
-      "result result result result";
-    min-height: 88px;
+      "category level current"
+      "result result result";
+    min-height: 66px;
   }
   .life-exp-item {
     grid-area: category;
@@ -1815,10 +1824,7 @@
     overflow: hidden;
   }
   .life-exp-gain {
-    grid-area: gain;
-    justify-content: center;
-    gap: 3px;
-    padding: 5px 3px;
+    display: none;
   }
   .life-exp-result {
     grid-area: result;
@@ -1826,8 +1832,8 @@
     align-items: center;
     gap: 1px;
     overflow: hidden;
-    min-height: 38px;
-    padding: 6px 9px;
+    min-height: 24px;
+    padding: 2px 9px;
     border-top: 1px solid rgba(139, 163, 207, 0.08);
   }
   .life-exp-row input {
