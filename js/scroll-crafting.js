@@ -135,20 +135,20 @@
     핸디크래프트: "",
   };
   const planExperiencePerScroll = {
-    가죽갑옷신발S: 305,
-    그랜드크로스보우: 358,
-    두꺼운가죽갑옷신발: 268,
-    두꺼운전투복신발: 268,
-    라이트크로스보우S: 400,
-    로터스힐링완드: 358,
-    론엣지소드S: 400,
-    마법유탄부품: 319,
-    마블힐링완드S: 400,
-    비늘갑옷신발S: 305,
-    사슬갑옷신발: 268,
-    전문캠파키트: 279,
-    전투복신발S: 305,
-    크레센트엣지소드: 358,
+    가죽갑옷신발S: 340,
+    그랜드크로스보우: 400,
+    두꺼운가죽갑옷신발: 299,
+    두꺼운전투복신발: 299,
+    라이트크로스보우S: 447,
+    로터스힐링완드: 400,
+    론엣지소드S: 447,
+    마법유탄부품: 357,
+    마블힐링완드S: 447,
+    비늘갑옷신발S: 340,
+    사슬갑옷신발: 299,
+    전문캠파키트: 312,
+    전투복신발S: 340,
+    크레센트엣지소드: 400,
   };
   const lifeRequiredExperience = [
     0, 100, 120, 130, 140, 154, 250, 280, 310, 350, 450, 825, 945, 1065, 1545,
@@ -687,7 +687,7 @@
     let nextLevel = Math.min(35, Math.max(1, Math.floor(level || 1)));
     let experience = Math.max(0, currentExperience || 0) + gainedExperience;
     while (nextLevel < 35) {
-      const requirement = lifeRequiredExperience[nextLevel + 1];
+      const requirement = lifeRequiredExperience[nextLevel];
       if (experience < requirement) break;
       experience -= requirement;
       nextLevel += 1;
@@ -696,7 +696,7 @@
       level: nextLevel,
       experience,
       requirement:
-        nextLevel < 35 ? lifeRequiredExperience[nextLevel + 1] : null,
+        nextLevel < 35 ? lifeRequiredExperience[nextLevel] : null,
     };
   }
 
@@ -719,7 +719,7 @@
             ? " life-exp-group-start"
             : " life-exp-group-continued";
         const currentRequirement =
-          current.level < 35 ? lifeRequiredExperience[current.level + 1] : null;
+          current.level < 35 ? lifeRequiredExperience[current.level] : null;
         const projected = projectLifeProgress(
           current.level,
           current.exp,
