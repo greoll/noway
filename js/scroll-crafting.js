@@ -747,7 +747,10 @@
           projected.level >= 35
             ? `<span class="life-exp-after"><b>Lv.${projected.level}</b><strong>MAX</strong></span>`
             : `<span class="life-exp-after"><b>Lv.${projected.level}</b><strong>${fmt(projected.experience)} / ${fmt(projected.requirement)}</strong></span>`;
-        const resultText = `<span class="life-exp-result-flow">${currentText}<i>→</i>${projectedText}</span>`;
+        const levelUpBadge = leveled
+          ? `<em class="life-exp-level-up">▲ LEVEL UP</em>`
+          : "";
+        const resultText = `<span class="life-exp-result-flow">${currentText}<i>→</i>${projectedText}${levelUpBadge}</span>`;
         return `<div class="life-exp-row${leveled ? " leveled" : ""}">
           <div class="life-exp-item${groupClass}"><span>${group}</span><strong class="life-exp-category">${label}</strong></div>
           <label class="life-exp-level"><span>현재 레벨</span><input type="text" inputmode="numeric" value="${current.level}" data-life-level="${category}"></label>
