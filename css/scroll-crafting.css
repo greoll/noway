@@ -1709,8 +1709,30 @@
   white-space: nowrap;
 }
 .life-exp-result {
+  position: relative;
   justify-content: flex-start;
   padding-left: 16px;
+  isolation: isolate;
+}
+.life-exp-progress-graph {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  pointer-events: none;
+}
+.life-exp-progress-graph > i,
+.life-exp-progress-graph > b {
+  display: block;
+  flex: 0 0 auto;
+  height: 100%;
+}
+.life-exp-progress-graph > i {
+  background: rgba(255, 210, 64, 0.34);
+}
+.life-exp-progress-graph > b {
+  background: rgba(65, 231, 178, 0.38);
 }
 .life-exp-result-flow > i {
   color: #7890ad;
@@ -1747,14 +1769,23 @@
     padding-left: 0 !important;
   }
   .life-exp-grid-head {
+    display: grid;
+    grid-template-columns: 26% 12% 34% 28%;
+    min-height: 36px;
+  }
+  .life-exp-grid-head > span {
+    padding: 4px 2px;
+    font-size: 10px;
+  }
+  .life-exp-grid-head > span:nth-child(5) {
     display: none;
   }
   .life-exp-row {
-    grid-template-columns: 116px 60px minmax(0, 1fr);
+    grid-template-columns: 26% 12% 34% 28%;
     grid-template-areas:
-      "category level current"
-      "gain result result";
-    min-height: 82px;
+      "category level current gain"
+      "result result result result";
+    min-height: 88px;
   }
   .life-exp-item {
     grid-area: category;
@@ -1776,27 +1807,27 @@
   }
   .life-exp-level {
     grid-area: level;
-    padding: 5px 3px;
+    padding: 5px 2px;
   }
   .life-exp-current {
     grid-area: current;
-    padding: 5px 7px;
+    padding: 5px 4px;
     overflow: hidden;
   }
   .life-exp-gain {
     grid-area: gain;
-    justify-content: flex-start;
-    padding: 6px 8px;
-    border-top: 1px solid rgba(139, 163, 207, 0.08);
+    justify-content: center;
+    gap: 3px;
+    padding: 5px 3px;
   }
   .life-exp-result {
     grid-area: result;
     justify-content: flex-start;
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
     gap: 1px;
     overflow: hidden;
-    padding: 6px 8px;
+    min-height: 38px;
+    padding: 6px 9px;
     border-top: 1px solid rgba(139, 163, 207, 0.08);
   }
   .life-exp-row input {
@@ -1805,13 +1836,19 @@
     font-size: 12px;
   }
   .life-exp-input-wrap {
-    grid-template-columns: minmax(54px, 1fr) minmax(72px, max-content);
-    gap: 5px;
+    grid-template-columns: minmax(40px, 1fr) minmax(60px, max-content);
+    gap: 3px;
   }
   .life-exp-input-wrap small {
-    min-width: 72px;
-    font-size: 11px;
+    min-width: 60px;
+    font-size: 10px;
     text-align: right;
+  }
+  .life-exp-gain small {
+    font-size: 10px;
+  }
+  .life-exp-gain b {
+    font-size: 12px;
   }
   .life-exp-result b,
   .life-exp-result strong {
