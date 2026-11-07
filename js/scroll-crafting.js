@@ -726,6 +726,22 @@
           gain.experience,
         );
         const leveled = projected.level > current.level;
+        const currentProgress = currentRequirement
+          ? Math.min(100, (current.exp / currentRequirement) * 100)
+          : 100;
+        const gainedProgress = leveled
+          ? 100 - currentProgress
+          : Math.max(
+              0,
+              Math.min(
+                100 - currentProgress,
+                currentRequirement
+                  ? ((projected.experience - current.exp) /
+                      currentRequirement) *
+                      100
+                  : 0,
+              ),
+            );
         const currentText = `<span class="life-exp-before">Lv.${current.level} ${fmt(current.exp)}</span>`;
         const projectedText =
           projected.level >= 35
@@ -737,7 +753,7 @@
           <label class="life-exp-level"><span>현재 레벨</span><input type="text" inputmode="numeric" value="${current.level}" data-life-level="${category}"></label>
           <label class="life-exp-current"><span>현재 경험치</span><span class="life-exp-input-wrap"><input type="text" inputmode="numeric" value="${current.exp}" data-life-exp="${category}"><small>${currentRequirement ? `/ ${fmt(currentRequirement)}` : "MAX"}</small></span></label>
           <div class="life-exp-gain"><span>예상 획득</span><small>${fmt(gain.scrolls)}장 제작</small><b>+${fmt(gain.experience)}</b></div>
-          <div class="life-exp-result"><span>예상 결과</span>${resultText}</div>
+          <div class="life-exp-result"><span>예상 결과</span><span class="life-exp-progress-graph" aria-hidden="true"><i style="width:${currentProgress.toFixed(2)}%"></i><b style="width:${gainedProgress.toFixed(2)}%"></b></span>${resultText}</div>
         </div>`;
       })
       .join("");
