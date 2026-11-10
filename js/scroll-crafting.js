@@ -776,7 +776,7 @@
         const projectedText =
           projected.level >= 35
             ? `<span class="life-exp-after"><b>Lv.${projected.level}</b><strong>MAX</strong></span>`
-            : `<span class="life-exp-after"><b>Lv.${projected.level}</b><strong>${fmt(projected.experience)} / ${fmt(projected.requirement)}</strong></span>`;
+            : `<span class="life-exp-after"><b> Lv.${projected.level}</b><strong>${fmt(projected.experience)} / ${fmt(projected.requirement)}</strong></span>`;
         const levelUpBadge = leveled
           ? `<em class="life-exp-level-up">▲ LEVEL UP</em>`
           : "";
