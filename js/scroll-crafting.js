@@ -280,6 +280,7 @@
     planSort: "default",
     priorityPlanIndexes: [],
     counts: plans.map((plan) => [...plan.counts]),
+    craftTargets: plans.map(() => classes.map(() => null)),
     stocks: Object.fromEntries(
       materials.map((material) => [material.name, material.stock]),
     ),
@@ -318,6 +319,14 @@
             return Number.isFinite(Number(value))
               ? Math.max(0, Number(value))
               : plan.counts[classIndex];
+          }),
+        ),
+        craftTargets: plans.map((_, planIndex) =>
+          classes.map((_, classIndex) => {
+            const value = saved.craftTargets?.[planIndex]?.[classIndex];
+            return value == null || value === "" || !Number.isFinite(Number(value))
+              ? null
+              : Math.max(0, Math.floor(Number(value)));
           }),
         ),
         stocks: Object.fromEntries(
@@ -362,6 +371,12 @@
     state.scope === "single"
       ? [state.singleClass]
       : classes.map((_, index) => index);
+  const requestedPlanCount = (planIndex, classIndex, useTargets = true) => {
+    const owned = state.counts[planIndex][classIndex] || 0;
+    if (!useTargets) return owned;
+    const target = state.craftTargets[planIndex][classIndex];
+    return target == null ? owned : Math.min(owned, target);
+  };
   const orderedPlanIndexes = () => {
     const indexes = plans.map((_, index) => index);
     if (state.planSort === "default") return indexes;
@@ -391,18 +406,19 @@
     let products = 0;
     plans.forEach((plan, planIndex) => {
       if (selectedPlans && !selectedPlans.has(planIndex)) return;
-      const planCounts = state.counts[planIndex];
       scrolls += activeIndexes.reduce(
-        (sum, classIndex) => sum + planCounts[classIndex],
+        (sum, classIndex) =>
+          sum + requestedPlanCount(planIndex, classIndex),
         0,
       );
       products += activeIndexes.reduce(
-        (sum, classIndex) => sum + planCounts[classIndex] * plan.yield,
+        (sum, classIndex) =>
+          sum + requestedPlanCount(planIndex, classIndex) * plan.yield,
         0,
       );
       (recipes[plan.name] || []).forEach(([materialName, amount]) => {
         activeIndexes.forEach((classIndex) => {
-          const count = planCounts[classIndex];
+          const count = requestedPlanCount(planIndex, classIndex);
           const required = count * plan.yield * amount;
           demand[materialName].classes[classIndex] += required;
           demand[materialName].total += required;
@@ -416,7 +432,7 @@
     return { demand, scrolls, products, shortageCount };
   }
 
-  function calculatePossibleCounts() {
+  function calculatePossibleCounts(useTargets = true) {
     const activeIndexes = activeClassIndexes();
     const remaining = Object.fromEntries(
       materials.map((material) => [
@@ -426,7 +442,8 @@
     );
     const byPlan = plans.map((plan, planIndex) => ({
       requestedScrolls: activeIndexes.reduce(
-        (sum, classIndex) => sum + (state.counts[planIndex][classIndex] || 0),
+        (sum, classIndex) =>
+          sum + requestedPlanCount(planIndex, classIndex, useTargets),
         0,
       ),
       possibleScrolls: 0,
@@ -455,7 +472,11 @@
     const distributeByClass = (planIndex, possibleScrolls) => {
       let rest = possibleScrolls;
       activeIndexes.forEach((classIndex) => {
-        const requested = state.counts[planIndex][classIndex] || 0;
+        const requested = requestedPlanCount(
+          planIndex,
+          classIndex,
+          useTargets,
+        );
         const possible = Math.min(requested, rest);
         byPlan[planIndex].classes[classIndex] = { requested, possible };
         rest -= possible;
@@ -544,7 +565,8 @@
           const plan = plans[planIndex];
           const counts = state.counts[planIndex];
           const productCount = activeIndexes.reduce(
-            (sum, classIndex) => sum + counts[classIndex] * plan.yield,
+            (sum, classIndex) =>
+              sum + requestedPlanCount(planIndex, classIndex) * plan.yield,
             0,
           );
           const possible = possibleCounts.byPlan[planIndex];
@@ -569,18 +591,20 @@
             .join("");
           const scrollEditor = (classIndex) => {
             const countResult = possible.classes[classIndex] || {
-              requested: counts[classIndex],
+              requested: requestedPlanCount(planIndex, classIndex),
               possible: 0,
             };
+            const targetCount = requestedPlanCount(planIndex, classIndex);
             const countClass =
-              countResult.requested === 0
+              targetCount === 0
                 ? "empty"
-                : countResult.possible >= countResult.requested
+                : countResult.possible >= targetCount
                   ? "full"
                   : countResult.possible > 0
                     ? "partial"
                     : "blocked";
-            return `<label class="scroll-count-editor ${countClass}"><span class="sr-only">${plan.name} ${classes[classIndex]}</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"><span class="scroll-count-display" aria-hidden="true"><b>${fmt(countResult.possible)}</b><i>/</i><strong>${fmt(countResult.requested)}</strong></span></label>`;
+            const hasTarget = state.craftTargets[planIndex][classIndex] != null;
+            return `<div class="scroll-count-editor ${countClass}${hasTarget ? " has-craft-target" : ""}"><label class="scroll-count-half craft-count-half" title="제작 예정 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 제작 예정 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${targetCount}" data-craft-count="${planIndex}:${classIndex}"><b aria-hidden="true">${fmt(targetCount)}</b></label><i aria-hidden="true">/</i><label class="scroll-count-half owned-count-half" title="보유 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 보유 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"><strong aria-hidden="true">${fmt(counts[classIndex])}</strong></label></div>`;
           };
           if (isMobile) {
             const classIndex = activeIndexes[0];
@@ -750,7 +774,7 @@
         const levelUpBadge = leveled
           ? `<em class="life-exp-level-up">▲ LEVEL UP</em>`
           : "";
-        const resultText = `<span class="life-exp-result-flow">${currentText}<i>→</i>${projectedText}${levelUpBadge}</span>`;
+        const resultText = `<span class="life-exp-result-flow">${currentText}<span class="life-exp-projected-line"><i>→</i>${projectedText}${levelUpBadge}</span></span>`;
         return `<div class="life-exp-row${leveled ? " leveled" : ""}">
           <div class="life-exp-item${groupClass}"><span>${group}</span><strong class="life-exp-category">${label}</strong></div>
           <label class="life-exp-level"><span>현재 레벨</span><input type="text" inputmode="numeric" value="${current.level}" data-life-level="${category}"></label>
@@ -787,6 +811,20 @@
   }
 
   function commitEditable(input) {
+    const craftInput = input.closest("[data-craft-count]");
+    if (craftInput) {
+      const [planIndex, classIndex] = craftInput.dataset.craftCount
+        .split(":")
+        .map(Number);
+      const owned = state.counts[planIndex][classIndex] || 0;
+      const target = Math.min(
+        owned,
+        Math.floor(numericValue(craftInput.value)),
+      );
+      state.craftTargets[planIndex][classIndex] =
+        target >= owned ? null : target;
+      return;
+    }
     const countInput = input.closest("[data-scroll-count]");
     if (countInput) {
       const [planIndex, classIndex] = countInput.dataset.scrollCount
@@ -820,6 +858,9 @@
   }
 
   function editableKey(input) {
+    if (input.dataset?.craftCount) {
+      return ["craftCount", input.dataset.craftCount];
+    }
     if (input.dataset?.scrollCount) {
       return ["scrollCount", input.dataset.scrollCount];
     }
@@ -840,7 +881,7 @@
     const [datasetName, value] = key;
     const next = [
       ...document.querySelectorAll(
-        "[data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
+        "[data-craft-count], [data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
       ),
     ].find((input) => input.dataset[datasetName] === value);
     if (!next) return;
@@ -865,7 +906,9 @@
       render();
       return;
     }
-    const countInput = event.target.closest("[data-scroll-count]");
+    const countInput = event.target.closest(
+      "[data-craft-count], [data-scroll-count]",
+    );
     if (countInput) {
       commitEditable(countInput);
       save();
@@ -928,14 +971,16 @@
 
   document.addEventListener("keydown", (event) => {
     const input = event.target.closest?.(
-      "[data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
+      "[data-craft-count], [data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
     );
     if (!input || !["Enter", "Tab"].includes(event.key)) return;
 
     const inputs = [
       ...document.querySelectorAll(
-        input.dataset.scrollCount
-          ? "[data-scroll-count]"
+        input.dataset.craftCount
+          ? "[data-craft-count]"
+          : input.dataset.scrollCount
+            ? "[data-scroll-count]"
           : input.dataset.materialStock
             ? "[data-material-stock]"
             : "[data-life-level], [data-life-exp]",
@@ -944,10 +989,14 @@
     const currentIndex = inputs.indexOf(input);
     let next = null;
 
-    if (event.key === "Enter" && input.dataset.scrollCount) {
-      const [, classIndex] = input.dataset.scrollCount.split(":");
+    if (
+      event.key === "Enter" &&
+      (input.dataset.craftCount || input.dataset.scrollCount)
+    ) {
+      const dataKey = input.dataset.craftCount ? "craftCount" : "scrollCount";
+      const [, classIndex] = input.dataset[dataKey].split(":");
       const sameColumn = inputs.filter(
-        (item) => item.dataset.scrollCount.split(":")[1] === classIndex,
+        (item) => item.dataset[dataKey].split(":")[1] === classIndex,
       );
       const columnIndex = sameColumn.indexOf(input);
       next = sameColumn[columnIndex + (event.shiftKey ? -1 : 1)] || null;
@@ -976,7 +1025,7 @@
   document.addEventListener("focusin", (event) => {
     if (
       event.target.matches?.(
-        "[data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
+        "[data-craft-count], [data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
       )
     ) {
       event.target.select();
