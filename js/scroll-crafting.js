@@ -278,6 +278,7 @@
     scope: "all",
     singleClass: 1,
     planSort: "default",
+    calculationBasis: "material",
     priorityPlanIndexes: [],
     counts: plans.map((plan) => [...plan.counts]),
     craftTargets: plans.map(() => classes.map(() => null)),
@@ -308,6 +309,8 @@
         planSort: ["default", "category"].includes(saved.planSort)
           ? saved.planSort
           : "default",
+        calculationBasis:
+          saved.calculationBasis === "scroll" ? "scroll" : "material",
         priorityPlanIndexes: Array.isArray(saved.priorityPlanIndexes)
           ? [...new Set(saved.priorityPlanIndexes.map(Number))].filter(
               (index) => Number.isInteger(index) && plans[index],
@@ -557,12 +560,13 @@
       ["category", "생활별"],
     ];
     document.getElementById("scrollPlanSort").innerHTML =
-      `<span>정렬</span>${options.map(([value, label]) => `<button type="button" data-plan-sort="${value}" class="${state.planSort === value ? "active" : ""}" aria-pressed="${state.planSort === value}">${label}</button>`).join("")}<button type="button" class="priority-clear" data-priority-clear${state.priorityPlanIndexes.length ? "" : " disabled"}>우선순위 전체 해제</button>`;
+      `<span>계산 기준</span><button type="button" data-calculation-basis="material" class="${state.calculationBasis === "material" ? "active" : ""}" aria-pressed="${state.calculationBasis === "material"}">재료</button><button type="button" data-calculation-basis="scroll" class="${state.calculationBasis === "scroll" ? "active" : ""}" aria-pressed="${state.calculationBasis === "scroll"}">스크롤</button><span class="sort-label">정렬</span>${options.map(([value, label]) => `<button type="button" data-plan-sort="${value}" class="${state.planSort === value ? "active" : ""}" aria-pressed="${state.planSort === value}">${label}</button>`).join("")}<button type="button" class="priority-clear" data-priority-clear${state.priorityPlanIndexes.length ? "" : " disabled"}>우선순위 전체 해제</button>`;
   }
 
   function renderPlan() {
     const activeIndexes = activeClassIndexes();
     const isMobile = window.matchMedia("(max-width: 760px)").matches;
+    const useMaterialBasis = state.calculationBasis === "material";
     const possibleCounts = calculatePossibleCounts();
     document.getElementById("scrollCraftPlanBody").innerHTML =
       orderedPlanIndexes()
@@ -575,23 +579,28 @@
             0,
           );
           const possible = possibleCounts.byPlan[planIndex];
+          const calculatedProducts = useMaterialBasis
+            ? possible.possibleProducts
+            : productCount;
           const priorityIndex = state.priorityPlanIndexes.indexOf(planIndex);
           const isPriority = priorityIndex >= 0;
           const possibleClass =
             productCount === 0
               ? "empty"
-              : possible.possibleProducts >= productCount
+              : calculatedProducts >= productCount
                 ? "full"
-                : possible.possibleProducts > 0
+                : calculatedProducts > 0
                   ? "partial"
                   : "blocked";
           const productName = `<button type="button" class="scroll-plan-product priority-toggle${isPriority ? " selected" : ""}" data-priority-plan="${planIndex}" aria-pressed="${isPriority}">`;
-          const productResult = `<strong class="possible-count">${fmt(possible.possibleProducts)}</strong><span class="count-divider">/</span><strong class="required-count">${fmt(productCount)}</strong><small></small>`;
+          const productResult = `<strong class="possible-count">${fmt(calculatedProducts)}</strong><span class="count-divider">/</span><strong class="required-count">${fmt(productCount)}</strong><small></small>`;
           const materialSummary = (recipes[plan.name] || [])
             .map(([materialName, amount]) => {
               // 제작량의 "가능" 수치와 동일한 기준으로 재료량을 표시한다.
-              const total = amount * possible.possibleProducts;
-              const stock = possible.availableStock[materialName] || 0;
+              const total = amount * calculatedProducts;
+              const stock = useMaterialBasis
+                ? possible.availableStock[materialName] || 0
+                : state.stocks[materialName] || 0;
               return `<span class="${stock < total ? "short" : "enough"}"><b>${materialName}</b><strong>${fmt(total)} / ${fmt(stock)}</strong></span>`;
             })
             .join("");
@@ -601,16 +610,19 @@
               possible: 0,
             };
             const targetCount = requestedPlanCount(planIndex, classIndex);
+            const calculatedScrolls = useMaterialBasis
+              ? countResult.possible
+              : targetCount;
             const countClass =
               targetCount === 0
                 ? "empty"
-                : countResult.possible >= targetCount
+                : calculatedScrolls >= targetCount
                   ? "full"
-                  : countResult.possible > 0
+                  : calculatedScrolls > 0
                     ? "partial"
                     : "blocked";
             const hasTarget = state.craftTargets[planIndex][classIndex] != null;
-            return `<div class="scroll-count-editor ${countClass}${hasTarget ? " has-craft-target" : ""}"><label class="scroll-count-half craft-count-half" title="제작 예정 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 제작 예정 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${targetCount}" data-craft-count="${planIndex}:${classIndex}"><b aria-hidden="true">${fmt(countResult.possible)}</b></label><i aria-hidden="true">/</i><label class="scroll-count-half owned-count-half" title="보유 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 보유 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"><strong aria-hidden="true">${fmt(counts[classIndex])}</strong></label></div>`;
+            return `<div class="scroll-count-editor ${countClass}${hasTarget ? " has-craft-target" : ""}"><label class="scroll-count-half craft-count-half" title="제작 예정 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 제작 예정 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${targetCount}" data-craft-count="${planIndex}:${classIndex}"><b aria-hidden="true">${fmt(calculatedScrolls)}</b></label><i aria-hidden="true">/</i><label class="scroll-count-half owned-count-half" title="보유 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 보유 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"><strong aria-hidden="true">${fmt(counts[classIndex])}</strong></label></div>`;
           };
           if (isMobile) {
             const classIndex = activeIndexes[0];
@@ -776,7 +788,7 @@
         const projectedText =
           projected.level >= 35
             ? `<span class="life-exp-after"><b>Lv.${projected.level}</b><strong>MAX</strong></span>`
-            : `<span class="life-exp-after"><b> Lv.${projected.level}</b><strong>${fmt(projected.experience)} / ${fmt(projected.requirement)}</strong></span>`;
+            : `<span class="life-exp-after"><b>Lv.${projected.level}</b><strong>${fmt(projected.experience)} / ${fmt(projected.requirement)}</strong></span>`;
         const levelUpBadge = leveled
           ? `<em class="life-exp-level-up">▲ LEVEL UP</em>`
           : "";
@@ -962,6 +974,19 @@
     const sortButton = event.target.closest("[data-plan-sort]");
     if (sortButton) {
       state.planSort = sortButton.dataset.planSort;
+      save();
+      renderPlanSort();
+      renderPlan();
+      return;
+    }
+    const calculationButton = event.target.closest(
+      "[data-calculation-basis]",
+    );
+    if (calculationButton) {
+      state.calculationBasis =
+        calculationButton.dataset.calculationBasis === "scroll"
+          ? "scroll"
+          : "material";
       save();
       renderPlanSort();
       renderPlan();
