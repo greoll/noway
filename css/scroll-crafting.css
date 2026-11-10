@@ -75,47 +75,68 @@
   color: #ff8f82;
 }
 .scroll-craft-page .scroll-count-editor {
-  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
   min-height: 28px;
 }
-.scroll-craft-page .scroll-count-editor input:not(:focus) {
-  opacity: 0;
+.scroll-craft-page .scroll-count-half {
+  position: relative;
+  display: block;
+  min-width: 0;
+  height: 28px;
+  cursor: text;
 }
-.scroll-craft-page .scroll-count-display {
+.scroll-craft-page .scroll-count-half input {
   position: absolute;
+  z-index: 1;
   inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 2px;
+  opacity: 0;
+  text-align: center;
+}
+.scroll-craft-page .scroll-count-half input:focus {
+  opacity: 1;
+}
+.scroll-craft-page .scroll-count-half input:focus + b,
+.scroll-craft-page .scroll-count-half input:focus + strong {
+  visibility: hidden;
+}
+.scroll-craft-page .scroll-count-half b,
+.scroll-craft-page .scroll-count-half strong {
   display: flex;
+  height: 100%;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  font-size: 12px;
+  font-weight: 950;
   pointer-events: none;
   white-space: nowrap;
 }
-.scroll-craft-page .scroll-count-editor:focus-within .scroll-count-display {
-  visibility: hidden;
-}
-.scroll-craft-page .scroll-count-display b,
-.scroll-craft-page .scroll-count-display strong {
-  font-size: 12px;
-  font-weight: 950;
-}
-.scroll-craft-page .scroll-count-display b {
+.scroll-craft-page .craft-count-half b {
   color: #70dfcb;
 }
-.scroll-craft-page .scroll-count-display strong {
+.scroll-craft-page .owned-count-half strong {
   color: #fff0a8;
 }
-.scroll-craft-page .scroll-count-display i {
+.scroll-craft-page .scroll-count-editor > i {
   color: #7c8798;
   font-size: 11px;
   font-style: normal;
   font-weight: 900;
 }
-.scroll-craft-page .scroll-count-editor.partial .scroll-count-display b {
+.scroll-craft-page .scroll-count-editor.partial .craft-count-half b {
   color: #ffd36e;
 }
-.scroll-craft-page .scroll-count-editor.blocked .scroll-count-display b {
+.scroll-craft-page .scroll-count-editor.blocked .craft-count-half b {
   color: #ff8f82;
+}
+.scroll-craft-page .scroll-count-editor.has-craft-target .craft-count-half {
+  background: rgba(248, 197, 30, 0.15);
 }
 
 @media (max-width: 760px) {
@@ -126,11 +147,8 @@
   .scroll-craft-page .plan-table .product-total .count-divider {
     margin-inline: 2px;
   }
-  .scroll-craft-page .scroll-count-display {
-    gap: 2px;
-  }
-  .scroll-craft-page .scroll-count-display b,
-  .scroll-craft-page .scroll-count-display strong {
+  .scroll-craft-page .scroll-count-half b,
+  .scroll-craft-page .scroll-count-half strong {
     font-size: 11px;
   }
 }
@@ -1424,7 +1442,7 @@
   }
   .scroll-craft-page .plan-table tbody th {
     position: static !important;
-    width: 38% !important;
+    width: 32% !important;
     min-width: 0 !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th {
@@ -1433,10 +1451,10 @@
     min-width: 0 !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:first-child {
-    width: 38% !important;
+    width: 32% !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(2) {
-    width: 13% !important;
+    width: 19% !important;
   }
   .scroll-craft-page .plan-table thead .mobile-plan-head th:nth-child(3) {
     width: 15% !important;
@@ -1445,7 +1463,7 @@
     width: 34% !important;
   }
   .scroll-craft-page .plan-table tbody td.editable {
-    width: 13% !important;
+    width: 19% !important;
     min-width: 0 !important;
   }
   .scroll-craft-page .plan-table tbody td.product-total {
@@ -1709,6 +1727,7 @@
   white-space: nowrap;
 }
 .life-exp-result-flow,
+.life-exp-projected-line,
 .life-exp-after {
   display: inline-flex;
   align-items: center;
@@ -1747,7 +1766,7 @@
 .life-exp-progress-graph > b {
   background: rgba(50, 100, 255, 0.3);
 }
-.life-exp-result-flow > i {
+.life-exp-projected-line > i {
   color: #ffffff;
   font-size: 13px;
   font-style: normal;
@@ -1894,7 +1913,7 @@
     gap: 4px;
   }
   .life-exp-before,
-  .life-exp-result-flow > i,
+  .life-exp-projected-line > i,
   .life-exp-after b,
   .life-exp-after strong {
     font-size: 11px !important;
@@ -1902,6 +1921,142 @@
   .life-exp-level-up {
     min-height: 17px;
     padding-inline: 4px;
+    font-size: 8px;
+  }
+}
+
+/* 태블릿 폭: 표 3의 입력 열을 줄이고 예상 결과 공간 확보 */
+@media (min-width: 761px) and (max-width: 1023px) {
+  .life-exp-grid-head,
+  .life-exp-row {
+    grid-template-columns: 160px 70px 150px minmax(260px, 1fr);
+  }
+  .life-exp-grid-head > span:nth-child(2) {
+    white-space: nowrap;
+  }
+  .life-exp-grid-head > span:nth-child(4),
+  .life-exp-gain {
+    display: none;
+  }
+  .life-exp-level,
+  .life-exp-current {
+    padding-inline: 4px;
+  }
+  .life-exp-input-wrap {
+    grid-template-columns: minmax(42px, 58px) minmax(66px, max-content);
+    gap: 3px;
+  }
+  .life-exp-input-wrap small {
+    min-width: 66px;
+    font-size: 10px;
+  }
+  .life-exp-row {
+    min-height: 54px;
+  }
+  .life-exp-result-flow {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1px;
+  }
+  .life-exp-projected-line {
+    gap: 4px;
+  }
+}
+
+/* 중간 폭: 표 1은 상단, 표 2와 표 3은 나란히 배치 */
+@media (min-width: 1024px) and (max-width: 1250px) {
+  .scroll-craft-page[data-scope="single"] {
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: start;
+  }
+  .scroll-craft-page[data-scope="single"] .scroll-craft-intro,
+  .scroll-craft-page[data-scope="single"] .scroll-plan-panel {
+    grid-column: 1 / -1;
+  }
+  .scroll-craft-page[data-scope="single"] .scroll-material-panel {
+    grid-column: 1;
+    grid-row: auto;
+    width: fit-content;
+    max-width: 100%;
+  }
+  .scroll-craft-page[data-scope="single"] .scroll-life-exp-panel {
+    grid-column: 2;
+    grid-row: auto;
+    width: 100%;
+    min-width: 0;
+  }
+  .scroll-craft-page[data-scope="single"]
+    .scroll-life-exp-panel
+    .scroll-craft-panel-head
+    p {
+    display: none;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-grid-head,
+  .scroll-craft-page[data-scope="single"] .life-exp-row {
+    grid-template-columns: 150px 70px 120px minmax(230px, 1fr);
+  }
+  .scroll-craft-page[data-scope="single"]
+    .life-exp-grid-head
+    > span:nth-child(2) {
+    white-space: nowrap;
+  }
+  .scroll-craft-page[data-scope="single"]
+    .life-exp-grid-head
+    > span:nth-child(4),
+  .scroll-craft-page[data-scope="single"] .life-exp-gain {
+    display: none;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-item {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-group-start > span {
+    width: 48px;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-category {
+    padding-inline: 6px;
+    font-size: 12px;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-level,
+  .scroll-craft-page[data-scope="single"] .life-exp-current {
+    padding-inline: 4px;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-input-wrap {
+    grid-template-columns: minmax(40px, 52px) minmax(60px, max-content);
+    gap: 2px;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-input-wrap small {
+    min-width: 60px;
+    font-size: 10px;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-row {
+    min-height: 80px;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-result {
+    padding-inline: 8px;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-result-flow {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-projected-line {
+    gap: 4px;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-before,
+  .scroll-craft-page[data-scope="single"] .life-exp-projected-line > i,
+  .scroll-craft-page[data-scope="single"] .life-exp-after b,
+  .scroll-craft-page[data-scope="single"] .life-exp-after strong {
+    font-size: 11px !important;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-level-up {
+    min-height: 17px;
+    padding-inline: 3px;
+    font-size: 0;
+  }
+  .scroll-craft-page[data-scope="single"] .life-exp-level-up::after {
+    content: "▲ UP";
     font-size: 8px;
   }
 }
