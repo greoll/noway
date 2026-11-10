@@ -449,6 +449,7 @@
       possibleScrolls: 0,
       possibleProducts: 0,
       classes: {},
+      availableStock: {},
     }));
 
     const possibleFromStock = (planIndex, stock) => {
@@ -485,6 +486,8 @@
 
     state.priorityPlanIndexes.forEach((planIndex) => {
       const plan = plans[planIndex];
+      // 이 우선순위 항목을 제작하기 직전의 재료 보유량을 보관한다.
+      byPlan[planIndex].availableStock = { ...remaining };
       const possible = possibleFromStock(planIndex, remaining);
       byPlan[planIndex].possibleScrolls = possible;
       byPlan[planIndex].possibleProducts = possible * plan.yield;
@@ -499,6 +502,8 @@
 
     plans.forEach((plan, planIndex) => {
       if (state.priorityPlanIndexes.includes(planIndex)) return;
+      // 우선순위 제작품에 사용된 재료를 제외한 잔여량을 기준으로 계산한다.
+      byPlan[planIndex].availableStock = { ...remaining };
       const possible = possibleFromStock(planIndex, remaining);
       byPlan[planIndex].possibleScrolls = possible;
       byPlan[planIndex].possibleProducts = possible * plan.yield;
@@ -584,8 +589,9 @@
           const productResult = `<strong class="possible-count">${fmt(possible.possibleProducts)}</strong><span class="count-divider">/</span><strong class="required-count">${fmt(productCount)}</strong><small></small>`;
           const materialSummary = (recipes[plan.name] || [])
             .map(([materialName, amount]) => {
-              const total = amount * productCount;
-              const stock = state.stocks[materialName] || 0;
+              // 제작량의 "가능" 수치와 동일한 기준으로 재료량을 표시한다.
+              const total = amount * possible.possibleProducts;
+              const stock = possible.availableStock[materialName] || 0;
               return `<span class="${stock < total ? "short" : "enough"}"><b>${materialName}</b><strong>${fmt(total)} / ${fmt(stock)}</strong></span>`;
             })
             .join("");
@@ -604,7 +610,7 @@
                     ? "partial"
                     : "blocked";
             const hasTarget = state.craftTargets[planIndex][classIndex] != null;
-            return `<div class="scroll-count-editor ${countClass}${hasTarget ? " has-craft-target" : ""}"><label class="scroll-count-half craft-count-half" title="제작 예정 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 제작 예정 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${targetCount}" data-craft-count="${planIndex}:${classIndex}"><b aria-hidden="true">${fmt(targetCount)}</b></label><i aria-hidden="true">/</i><label class="scroll-count-half owned-count-half" title="보유 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 보유 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"><strong aria-hidden="true">${fmt(counts[classIndex])}</strong></label></div>`;
+            return `<div class="scroll-count-editor ${countClass}${hasTarget ? " has-craft-target" : ""}"><label class="scroll-count-half craft-count-half" title="제작 예정 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 제작 예정 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${targetCount}" data-craft-count="${planIndex}:${classIndex}"><b aria-hidden="true">${fmt(countResult.possible)}</b></label><i aria-hidden="true">/</i><label class="scroll-count-half owned-count-half" title="보유 스크롤"><span class="sr-only">${plan.name} ${classes[classIndex]} 보유 스크롤</span><input type="text" inputmode="numeric" pattern="[0-9]*" value="${counts[classIndex]}" data-scroll-count="${planIndex}:${classIndex}"><strong aria-hidden="true">${fmt(counts[classIndex])}</strong></label></div>`;
           };
           if (isMobile) {
             const classIndex = activeIndexes[0];
