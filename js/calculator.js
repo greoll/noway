@@ -872,7 +872,7 @@ ${r.baseDamage.toFixed(2)} × (1 + (${r.damage.base.toFixed(2)} + ${r.classBonus
 
       const APP_TAB_STORAGE_KEY = "mabinogi-active-app-tab";
       const applyAppTab = (selectedPage) => {
-        const validPage = ["calculator", "setup", "rune", "guide", "craft", "scrollcraft"].includes(
+        const validPage = ["calculator", "guide", "scrollcraft"].includes(
           selectedPage,
         )
           ? selectedPage

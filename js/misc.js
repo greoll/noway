@@ -198,7 +198,7 @@ const renderSeasonWeekPlanner = () => {
     1,
     Math.min(150, Number(seasonWeekPlannerState.targetLevel) || 55),
   );
-  const startLevel = Math.max(1, targetLevel - 4);
+  const startLevel = Math.max(1, targetLevel - 1);
   seasonWeekPlannerState.targetLevel = targetLevel;
   targetInput.value = String(targetLevel);
   if (seasonWeekPlannerState.weekendCombined) {
@@ -298,11 +298,11 @@ const renderSeasonWeekPlanner = () => {
     const weekOffset = Math.round((weekMonday - currentMonday) / 604800000);
     const weekStartLevel = Math.max(
       1,
-      Math.min(150, startLevel + weekOffset * 5),
+      Math.min(150, startLevel + weekOffset * 2),
     );
     const weekTargetLevel = Math.max(
       weekStartLevel,
-      Math.min(150, targetLevel + weekOffset * 5),
+      Math.min(150, targetLevel + weekOffset * 2),
     );
     let totalRequiredExp = 0;
     for (let level = weekStartLevel; level <= weekTargetLevel; level += 1) {
@@ -458,6 +458,7 @@ const setSeasonRange = (rangeIndex) => {
 
 const applyMiscTab = (selectedTab) => {
   const validTab = [
+    "quest",
     "stats",
     "resistance",
     "season",
@@ -465,7 +466,8 @@ const applyMiscTab = (selectedTab) => {
     "calendar",
   ].includes(selectedTab)
     ? selectedTab
-    : "stats";
+    : "quest";
+  document.getElementById("miscQuestPage").hidden = validTab !== "quest";
   document.getElementById("miscStatsPage").hidden = validTab !== "stats";
   document.getElementById("miscResistancePage").hidden =
     validTab !== "resistance";
@@ -602,7 +604,7 @@ document.addEventListener("change", (event) => {
   renderSeasonWeekPlanner();
 });
 
-applyMiscTab(localStorage.getItem(MISC_TAB_STORAGE_KEY) || "stats");
+applyMiscTab(localStorage.getItem(MISC_TAB_STORAGE_KEY) || "quest");
 renderSeasonLevelRange();
 renderSeasonGoal();
 renderSeasonWeekPlanner();
