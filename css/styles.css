@@ -2690,3 +2690,7 @@ h1 {
   white-space: nowrap;
   border: 0;
 }
+.app-tab[hidden] {
+  display: none !important;
+}
+
