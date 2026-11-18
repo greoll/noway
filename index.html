@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>새 탭</title>
-    <link rel="stylesheet" href="./css/styles.css?v=20261103-1" />
+    <link rel="stylesheet" href="./css/styles.css?v=20261118-1" />
     <link rel="stylesheet" href="./css/cloud-sync.css?v=20261103-2" />
+    <link rel="stylesheet" href="./css/memo.css?v=20261118-1" />
+    <link rel="stylesheet" href="./css/quest.css?v=20261118-1" />
     <link rel="stylesheet" href="./css/enchant.css?v=20261103-1" />
     <link rel="stylesheet" href="./css/crafting.css?v=20261103-1" />
     <link rel="stylesheet" href="./css/rune.css?v=20261103-1" />
@@ -34,6 +36,7 @@
               class="app-tab"
               data-app-tab="setup"
               aria-selected="false"
+              hidden
             >
               세팅 분석
             </button>
@@ -42,6 +45,7 @@
               class="app-tab"
               data-app-tab="rune"
               aria-selected="false"
+              hidden
             >
               룬 계산기
             </button>
@@ -50,6 +54,7 @@
               class="app-tab"
               data-app-tab="craft"
               aria-selected="false"
+              hidden
             >
               제작
             </button>
@@ -372,8 +377,16 @@
           <button
             type="button"
             class="misc-subtab active"
-            data-misc-tab="stats"
+            data-misc-tab="quest"
             aria-selected="true"
+          >
+            퀘스트
+          </button>
+          <button
+            type="button"
+            class="misc-subtab"
+            data-misc-tab="stats"
+            aria-selected="false"
           >
             스탯 설명서
           </button>
@@ -411,7 +424,37 @@
           </button>
         </nav>
 
-        <div id="miscStatsPage">
+        <div id="miscQuestPage">
+          <section class="quest-panel">
+            <header class="quest-panel-head">
+              <div>
+                <span>주말 퀘스트</span>
+                <h2>채집 재료 준비</h2>
+              </div>
+              <label class="quest-target-input">
+                <span>상한 필요량</span>
+                <input id="questTargetAmount" type="text" inputmode="numeric" pattern="[0-9]*" aria-label="주말 퀘스트 목표 수량" />
+              </label>
+            </header>
+            <div class="quest-table-wrap">
+              <table class="quest-table">
+                <thead>
+                  <tr>
+                    <th scope="col">구분</th>
+                    <th scope="col">재료</th>
+                    <th scope="col">소지량</th>
+                    <th scope="col">필요량</th>
+                    <th scope="col">채집장소</th>
+                    <th scope="col">비고</th>
+                  </tr>
+                </thead>
+                <tbody id="questMaterialBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div id="miscStatsPage" hidden>
           <p class="guide-intro">
             각 스탯이 전투에 적용되는 효과를 확인할 수 있습니다.
           </p>
@@ -1408,6 +1451,30 @@
       </section>
     </main>
 
+    <button class="global-memo-trigger" id="globalMemoTrigger" type="button" aria-controls="globalMemoPanel" aria-expanded="false">
+      <span aria-hidden="true">✎</span>
+      <b>메모</b>
+      <i id="globalMemoIndicator" aria-hidden="true"></i>
+    </button>
+
+    <div class="global-memo-backdrop" id="globalMemoBackdrop" hidden></div>
+    <aside class="global-memo-panel" id="globalMemoPanel" aria-labelledby="globalMemoTitle" hidden>
+      <header>
+        <div>
+          <span>모든 탭에서 공통 사용</span>
+          <h2 id="globalMemoTitle">전역 메모</h2>
+        </div>
+        <button type="button" id="globalMemoClose" aria-label="메모장 닫기">×</button>
+      </header>
+      <div class="global-memo-body">
+        <textarea id="globalMemoText" placeholder="기억할 내용이나 할 일을 자유롭게 적어두세요." aria-label="전역 메모 내용"></textarea>
+        <div class="global-memo-footer">
+          <span id="globalMemoStatus" role="status">자동 저장</span>
+          <small>클라우드 연결 시 다른 기기에도 동기화됩니다.</small>
+        </div>
+      </div>
+    </aside>
+
     <dialog class="cloud-sync-dialog" id="cloudSyncDialog">
       <div class="cloud-sync-modal">
         <header>
@@ -1449,6 +1516,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="./js/cloud-sync.js?v=20261103-5" defer></script>
+    <script src="./js/memo.js?v=20261118-1" defer></script>
     <script src="./js/rune-data.js" defer></script>
     <script src="./js/rune.js" defer></script>
     <script src="./js/crafting-data.js" defer></script>
@@ -1456,9 +1524,10 @@
     <script src="./js/scroll-crafting.js?v=20261110-6" defer></script>
     <script src="./js/enchant-data.js" defer></script>
     <script src="./js/enchant.js" defer></script>
-    <script src="./js/misc.js" defer></script>
+    <script src="./js/quest.js?v=20261118-2" defer></script>
+    <script src="./js/misc.js?v=20261118-1" defer></script>
     <script src="./js/calculator-data.js" defer></script>
     <script src="./js/setup-analysis.js" defer></script>
-    <script src="./js/calculator.js" defer></script>
+    <script src="./js/calculator.js?v=20261118-1" defer></script>
   </body>
 </html>
