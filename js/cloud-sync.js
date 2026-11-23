@@ -4,6 +4,8 @@
   const SUPABASE_URL = "https://sbklxbkpgfzfpeaooxij.supabase.co";
   const SUPABASE_KEY = "sb_publishable_etPPK5UV2SucBKY3Zg0SCA_dEZUh91U";
   const DATA_PREFIX = "mabinogi-";
+  const PROTECTED_APP_KEYS = ["mabinogi-global-memo-v1"];
+  const MEMO_BACKUP_STORAGE = "local-global-memo-backup-v1";
   const SYNC_KEY_STORAGE = "cloud-sync-shared-key";
   const LAST_REMOTE_STORAGE = "cloud-sync-last-remote";
   const TABLE = "shared_app_state";
@@ -22,6 +24,14 @@
 
   const byId = (id) => document.getElementById(id);
   const isAppKey = (key) => typeof key === "string" && key.startsWith(DATA_PREFIX);
+  const isMissingProtectedState = (state) =>
+    PROTECTED_APP_KEYS.some(
+      (key) =>
+        !Object.prototype.hasOwnProperty.call(state || {}, key) &&
+        (localStorage.getItem(key) !== null ||
+          (key === "mabinogi-global-memo-v1" &&
+            localStorage.getItem(MEMO_BACKUP_STORAGE) !== null)),
+    );
 
   function collectState() {
     const state = {};
@@ -66,14 +76,36 @@
   function applyState(state) {
     applyingRemote = true;
     try {
+      const incomingState = state || {};
+      const protectedValues = {};
+      PROTECTED_APP_KEYS.forEach((key) => {
+        if (Object.prototype.hasOwnProperty.call(incomingState, key)) return;
+        const localValue = localStorage.getItem(key);
+        const backupValue =
+          key === "mabinogi-global-memo-v1"
+            ? localStorage.getItem(MEMO_BACKUP_STORAGE)
+            : null;
+        if (localValue !== null) protectedValues[key] = localValue;
+        else if (backupValue !== null) protectedValues[key] = backupValue;
+      });
       const currentKeys = [];
       for (let index = 0; index < localStorage.length; index += 1) {
         const key = localStorage.key(index);
         if (isAppKey(key)) currentKeys.push(key);
       }
       currentKeys.forEach((key) => originalRemoveItem.call(localStorage, key));
-      Object.entries(state || {}).forEach(([key, value]) => {
+      Object.entries(incomingState).forEach(([key, value]) => {
         if (isAppKey(key) && typeof value === "string") originalSetItem.call(localStorage, key, value);
+      });
+      if (typeof incomingState["mabinogi-global-memo-v1"] === "string") {
+        originalSetItem.call(
+          localStorage,
+          MEMO_BACKUP_STORAGE,
+          incomingState["mabinogi-global-memo-v1"],
+        );
+      }
+      Object.entries(protectedValues).forEach(([key, value]) => {
+        originalSetItem.call(localStorage, key, value);
       });
     } finally {
       applyingRemote = false;
@@ -98,12 +130,28 @@
     setTrigger("syncing", "저장 중");
     if (announce) setMessage("현재 기기의 데이터를 저장하고 있습니다.");
     try {
+      const uploadState = collectState();
+      const missingProtectedKeys = PROTECTED_APP_KEYS.filter(
+        (key) => !Object.prototype.hasOwnProperty.call(uploadState, key),
+      );
+      if (missingProtectedKeys.length) {
+        const remoteRow = await fetchRemote();
+        missingProtectedKeys.forEach((key) => {
+          const remoteValue = remoteRow?.state?.[key];
+          const backupValue =
+            key === "mabinogi-global-memo-v1"
+              ? localStorage.getItem(MEMO_BACKUP_STORAGE)
+              : null;
+          if (typeof remoteValue === "string") uploadState[key] = remoteValue;
+          else if (backupValue !== null) uploadState[key] = backupValue;
+        });
+      }
       const updatedAt = new Date().toISOString();
       const { data, error } = await client
         .from(TABLE)
         .upsert({
           sync_id: syncKey,
-          state: collectState(),
+          state: uploadState,
           updated_at: updatedAt,
         }, { onConflict: "sync_id" })
         .select("updated_at")
@@ -139,7 +187,11 @@
       return;
     }
     applyState(row.state);
+    const shouldRepairProtectedState = isMissingProtectedState(row.state);
     originalSetItem.call(localStorage, LAST_REMOTE_STORAGE, row.updated_at || "");
+    if (shouldRepairProtectedState) {
+      await uploadLocal({ announce: false });
+    }
     elements.conflict.hidden = true;
     setTrigger("connected", "동기화 연결됨");
     if (announce) setMessage("클라우드 데이터를 적용했습니다.", "success");
@@ -159,7 +211,11 @@
         return;
       }
       applyState(row.state);
+      const shouldRepairProtectedState = isMissingProtectedState(row.state);
       originalSetItem.call(localStorage, LAST_REMOTE_STORAGE, row.updated_at);
+      if (shouldRepairProtectedState) {
+        await uploadLocal({ announce: false });
+      }
       setTrigger("syncing", "변경 감지");
       setMessage("다른 기기의 변경사항을 적용합니다.", "success");
       window.setTimeout(() => location.reload(), 250);

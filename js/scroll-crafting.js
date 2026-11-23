@@ -327,7 +327,9 @@
         craftTargets: plans.map((_, planIndex) =>
           classes.map((_, classIndex) => {
             const value = saved.craftTargets?.[planIndex]?.[classIndex];
-            return value == null || value === "" || !Number.isFinite(Number(value))
+            return value == null ||
+              value === "" ||
+              !Number.isFinite(Number(value))
               ? null
               : Math.max(0, Math.floor(Number(value)));
           }),
@@ -410,8 +412,7 @@
     plans.forEach((plan, planIndex) => {
       if (selectedPlans && !selectedPlans.has(planIndex)) return;
       scrolls += activeIndexes.reduce(
-        (sum, classIndex) =>
-          sum + requestedPlanCount(planIndex, classIndex),
+        (sum, classIndex) => sum + requestedPlanCount(planIndex, classIndex),
         0,
       );
       products += activeIndexes.reduce(
@@ -476,11 +477,7 @@
     const distributeByClass = (planIndex, possibleScrolls) => {
       let rest = possibleScrolls;
       activeIndexes.forEach((classIndex) => {
-        const requested = requestedPlanCount(
-          planIndex,
-          classIndex,
-          useTargets,
-        );
+        const requested = requestedPlanCount(planIndex, classIndex, useTargets);
         const possible = Math.min(requested, rest);
         byPlan[planIndex].classes[classIndex] = { requested, possible };
         rest -= possible;
@@ -559,8 +556,14 @@
       ["default", "기본 순서"],
       ["category", "생활별"],
     ];
+    const activeIndexes = activeClassIndexes();
+    const hasChangedCraftTargets = plans.some((_, planIndex) =>
+      activeIndexes.some(
+        (classIndex) => state.craftTargets[planIndex][classIndex] != null,
+      ),
+    );
     document.getElementById("scrollPlanSort").innerHTML =
-      `<span>계산 기준</span><button type="button" data-calculation-basis="material" class="${state.calculationBasis === "material" ? "active" : ""}" aria-pressed="${state.calculationBasis === "material"}">재료</button><button type="button" data-calculation-basis="scroll" class="${state.calculationBasis === "scroll" ? "active" : ""}" aria-pressed="${state.calculationBasis === "scroll"}">스크롤</button><span class="sort-label">정렬</span>${options.map(([value, label]) => `<button type="button" data-plan-sort="${value}" class="${state.planSort === value ? "active" : ""}" aria-pressed="${state.planSort === value}">${label}</button>`).join("")}<button type="button" class="priority-clear" data-priority-clear${state.priorityPlanIndexes.length ? "" : " disabled"}>우선순위 전체 해제</button>`;
+      `<div class="scroll-control-row scroll-control-row-primary"><div class="scroll-control-group scroll-control-calculation"><span class="scroll-control-label">계산 기준</span><button type="button" data-calculation-basis="material" class="${state.calculationBasis === "material" ? "active" : ""}" aria-pressed="${state.calculationBasis === "material"}">재료</button><button type="button" data-calculation-basis="scroll" class="${state.calculationBasis === "scroll" ? "active" : ""}" aria-pressed="${state.calculationBasis === "scroll"}">스크롤</button></div><div class="scroll-control-group scroll-control-sort"><span class="scroll-control-label">정렬 기준</span>${options.map(([value, label]) => `<button type="button" data-plan-sort="${value}" class="${state.planSort === value ? "active" : ""}" aria-pressed="${state.planSort === value}">${label}</button>`).join("")}</div></div><div class="scroll-control-row scroll-control-row-actions"><div class="scroll-control-group scroll-control-action"><button type="button" class="priority-clear" data-priority-clear${state.priorityPlanIndexes.length ? "" : " disabled"}>우선순위 해제</button></div><div class="scroll-control-group scroll-control-action"><button type="button" class="scroll-count-reset" data-scroll-count-reset${hasChangedCraftTargets ? "" : " disabled"}>제작 예정 초기화</button></div><div class="scroll-control-group scroll-control-add"><span class="scroll-control-label">스크롤</span><input class="scroll-bulk-add-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="3" data-scroll-count-add-input aria-label="전체 항목에 추가할 스크롤 개수"><span class="scroll-bulk-add-unit">개</span><button type="button" class="scroll-bulk-add-button" data-scroll-count-add disabled>추가</button></div></div>`;
   }
 
   function renderPlan() {
@@ -737,8 +740,7 @@
     return {
       level: nextLevel,
       experience,
-      requirement:
-        nextLevel < 35 ? lifeRequiredExperience[nextLevel] : null,
+      requirement: nextLevel < 35 ? lifeRequiredExperience[nextLevel] : null,
     };
   }
 
@@ -971,6 +973,34 @@
       render();
       return;
     }
+    if (event.target.closest("[data-scroll-count-reset]")) {
+      const classIndexes = activeClassIndexes();
+      plans.forEach((_, planIndex) => {
+        classIndexes.forEach((classIndex) => {
+          state.craftTargets[planIndex][classIndex] = null;
+        });
+      });
+      save();
+      render();
+      return;
+    }
+    if (event.target.closest("[data-scroll-count-add]")) {
+      const addInput = document.querySelector(
+        "[data-scroll-count-add-input]",
+      );
+      const amount = Math.floor(numericValue(addInput?.value));
+      if (amount <= 0) return;
+      const classIndexes = activeClassIndexes();
+      plans.forEach((_, planIndex) => {
+        classIndexes.forEach((classIndex) => {
+          state.counts[planIndex][classIndex] =
+            numericValue(state.counts[planIndex][classIndex]) + amount;
+        });
+      });
+      save();
+      render();
+      return;
+    }
     const sortButton = event.target.closest("[data-plan-sort]");
     if (sortButton) {
       state.planSort = sortButton.dataset.planSort;
@@ -979,9 +1009,7 @@
       renderPlan();
       return;
     }
-    const calculationButton = event.target.closest(
-      "[data-calculation-basis]",
-    );
+    const calculationButton = event.target.closest("[data-calculation-basis]");
     if (calculationButton) {
       state.calculationBasis =
         calculationButton.dataset.calculationBasis === "scroll"
@@ -1001,6 +1029,14 @@
   });
 
   document.addEventListener("keydown", (event) => {
+    const bulkAddInput = event.target.closest?.(
+      "[data-scroll-count-add-input]",
+    );
+    if (bulkAddInput && event.key === "Enter") {
+      event.preventDefault();
+      document.querySelector("[data-scroll-count-add]")?.click();
+      return;
+    }
     const input = event.target.closest?.(
       "[data-craft-count], [data-scroll-count], [data-material-stock], [data-life-level], [data-life-exp]",
     );
@@ -1012,9 +1048,9 @@
           ? "[data-craft-count]"
           : input.dataset.scrollCount
             ? "[data-scroll-count]"
-          : input.dataset.materialStock
-            ? "[data-material-stock]"
-            : "[data-life-level], [data-life-exp]",
+            : input.dataset.materialStock
+              ? "[data-material-stock]"
+              : "[data-life-level], [data-life-exp]",
       ),
     ];
     const currentIndex = inputs.indexOf(input);
@@ -1060,6 +1096,14 @@
       )
     ) {
       event.target.select();
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    if (!event.target.matches?.("[data-scroll-count-add-input]")) return;
+    const addButton = document.querySelector("[data-scroll-count-add]");
+    if (addButton) {
+      addButton.disabled = numericValue(event.target.value) <= 0;
     }
   });
 

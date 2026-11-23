@@ -2,6 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "mabinogi-global-memo-v1";
+  const BACKUP_STORAGE_KEY = "local-global-memo-backup-v1";
   const trigger = document.getElementById("globalMemoTrigger");
   const indicator = document.getElementById("globalMemoIndicator");
   const panel = document.getElementById("globalMemoPanel");
@@ -12,7 +13,12 @@
   if (!trigger || !panel || !textarea) return;
 
   let saveTimer = 0;
-  textarea.value = localStorage.getItem(STORAGE_KEY) || "";
+  const storedMemo = localStorage.getItem(STORAGE_KEY);
+  const backupMemo = localStorage.getItem(BACKUP_STORAGE_KEY);
+  textarea.value = storedMemo !== null ? storedMemo : backupMemo || "";
+  if (storedMemo === null && backupMemo !== null) {
+    localStorage.setItem(STORAGE_KEY, backupMemo);
+  }
 
   const updateIndicator = () => {
     const hasContent = Boolean(textarea.value.trim());
@@ -23,6 +29,7 @@
   const save = () => {
     window.clearTimeout(saveTimer);
     localStorage.setItem(STORAGE_KEY, textarea.value);
+    localStorage.setItem(BACKUP_STORAGE_KEY, textarea.value);
     status.textContent = "저장됨";
     updateIndicator();
   };
