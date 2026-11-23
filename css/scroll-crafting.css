@@ -48,6 +48,57 @@
   opacity: 0.38;
   cursor: default;
 }
+.scroll-plan-sort .scroll-count-reset {
+  margin-left: 5px;
+  color: #ff9b8e;
+  border-color: rgba(255, 126, 111, 0.3);
+}
+.scroll-plan-sort .scroll-count-reset:hover:not(:disabled) {
+  color: #240906;
+  border-color: #ff9b8e;
+  background: #ff9b8e;
+}
+.scroll-plan-sort .scroll-count-reset:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+.scroll-plan-sort .scroll-bulk-add-label {
+  margin-left: 8px;
+}
+.scroll-plan-sort .scroll-bulk-add-input {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 27px;
+  padding: 0 5px;
+  border: 1px solid rgba(255, 210, 94, 0.38);
+  border-radius: 5px;
+  outline: 0;
+  color: #ffe184;
+  background: rgba(255, 204, 67, 0.1);
+  text-align: center;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 850;
+}
+.scroll-plan-sort .scroll-bulk-add-input:focus {
+  border-color: #ffd95e;
+}
+.scroll-plan-sort .scroll-bulk-add-unit {
+  margin: 0 1px 0 -1px !important;
+}
+.scroll-plan-sort .scroll-bulk-add-button {
+  color: #70dfcb;
+  border-color: rgba(112, 223, 203, 0.32);
+}
+.scroll-plan-sort .scroll-bulk-add-button:hover:not(:disabled) {
+  color: #071918;
+  border-color: #70dfcb;
+  background: #70dfcb;
+}
+.scroll-plan-sort .scroll-bulk-add-button:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
 .scroll-craft-page .plan-table .product-total {
   white-space: nowrap;
 }
@@ -2061,5 +2112,121 @@
   .scroll-craft-page[data-scope="single"] .life-exp-level-up::after {
     content: "▲ UP";
     font-size: 8px;
+  }
+}
+
+/* 표 01 조작부: 기능별 묶음 */
+.scroll-plan-sort {
+  gap: 7px !important;
+  overflow: visible;
+  flex-wrap: wrap;
+}
+.scroll-control-row,
+.scroll-control-group {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+.scroll-control-row {
+  gap: 7px;
+}
+.scroll-control-group {
+  min-height: 32px;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid rgba(133, 159, 202, 0.17);
+  border-radius: 7px;
+  background: rgba(9, 16, 29, 0.28);
+}
+.scroll-plan-sort .scroll-control-label,
+.scroll-plan-sort .scroll-bulk-add-unit {
+  flex: 0 0 auto;
+  margin: 0 4px !important;
+  color: #8998af;
+  background: transparent;
+  font-size: 11px !important;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.scroll-plan-sort .scroll-control-group button {
+  min-height: 24px;
+  padding: 5px 7px;
+  border: 0;
+  background: transparent;
+}
+.scroll-plan-sort .scroll-control-group button:hover:not(:disabled) {
+  background: rgba(112, 223, 203, 0.11);
+}
+.scroll-plan-sort .scroll-control-group button.active {
+  color: #071918;
+  background: #70dfcb;
+}
+.scroll-plan-sort .scroll-control-action {
+  padding: 3px 4px;
+}
+.scroll-plan-sort .priority-clear,
+.scroll-plan-sort .scroll-count-reset {
+  margin-left: 0;
+}
+.scroll-plan-sort .scroll-control-add {
+  gap: 1px;
+}
+.scroll-plan-sort .scroll-control-add .scroll-bulk-add-input {
+  height: 24px;
+  border: 0;
+  background: rgba(255, 204, 67, 0.1);
+}
+
+@media (max-width: 760px) {
+  .scroll-craft-page .scroll-plan-panel > .scroll-craft-panel-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 7px 9px;
+  }
+  .scroll-craft-page .scroll-plan-panel > .scroll-craft-panel-head > div:first-child {
+    align-self: center;
+    white-space: nowrap;
+  }
+  .scroll-craft-page .scroll-plan-panel .scroll-plan-sort {
+    display: contents;
+  }
+  .scroll-craft-page .scroll-plan-panel .scroll-control-row-primary {
+    grid-column: 2;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .scroll-craft-page .scroll-plan-panel .scroll-control-row-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+  .scroll-plan-sort .scroll-control-group {
+    min-height: 30px;
+    gap: 1px;
+  }
+  .scroll-plan-sort .scroll-control-label,
+  .scroll-plan-sort .scroll-bulk-add-unit {
+    margin-inline: 3px !important;
+    font-size: 10px !important;
+  }
+  .scroll-plan-sort .scroll-control-group button {
+    padding-inline: 4px;
+    font-size: 10px !important;
+  }
+  .scroll-plan-sort .scroll-control-calculation .scroll-control-label,
+  .scroll-plan-sort .scroll-control-sort .scroll-control-label {
+    font-size: 0 !important;
+  }
+  .scroll-plan-sort .scroll-control-calculation .scroll-control-label::after {
+    content: "계산";
+    font-size: 10px;
+  }
+  .scroll-plan-sort .scroll-control-sort .scroll-control-label::after {
+    content: "정렬";
+    font-size: 10px;
+  }
+  .scroll-plan-sort .scroll-control-add .scroll-bulk-add-input {
+    width: 36px;
+    flex-basis: 36px;
   }
 }

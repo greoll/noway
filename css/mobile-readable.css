@@ -1,0 +1,127 @@
+/* 모바일 가독성 보정: 레이아웃은 유지하고 실제 읽는 정보만 확대 */
+@media (max-width: 760px) {
+  body {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .wrap {
+    width: calc(100% - 16px);
+  }
+
+  .app-tab,
+  .cloud-sync-trigger,
+  .btn,
+  .misc-subtab {
+    font-size: 14px;
+  }
+
+  /* 계산기 */
+  #calculatorPage .panel label,
+  #calculatorPage .panel input,
+  #calculatorPage .panel select,
+  #calculatorPage .panel button,
+  #calculatorPage .panel th,
+  #calculatorPage .panel td {
+    font-size: 14px;
+  }
+  #calculatorPage .panel small,
+  #calculatorPage .panel .hint,
+  #calculatorPage .panel .note {
+    font-size: 12px;
+  }
+
+  /* 스크롤 제작 표 1·2 */
+  .scroll-craft-page .scroll-craft-panel-head h3 {
+    font-size: 17px;
+  }
+  .scroll-craft-page .plan-table thead th,
+  .scroll-craft-page .material-table thead th {
+    font-size: 12px !important;
+  }
+  .scroll-craft-page .scroll-plan-product b,
+  .scroll-craft-page .plan-table input,
+  .scroll-craft-page .plan-table .product-total strong,
+  .scroll-craft-page .material-table input,
+  .scroll-craft-page .material-table .material-total strong,
+  .scroll-craft-page .material-table .material-balance b {
+    font-size: 13px !important;
+  }
+  .scroll-craft-page .plan-total-materials > span b,
+  .scroll-craft-page .plan-total-materials > span strong,
+  .scroll-craft-page .material-table .material-source-group,
+  .scroll-craft-page .material-table .material-source-detail,
+  .scroll-craft-page .material-table .material-name {
+    font-size: 12px !important;
+  }
+
+  /* 생활 경험치 예상 */
+  .scroll-craft-page .life-exp-grid-head > span,
+  .scroll-craft-page .life-exp-item > span,
+  .scroll-craft-page .life-exp-input-wrap small {
+    font-size: 11px;
+  }
+  .scroll-craft-page .life-exp-category,
+  .scroll-craft-page .life-exp-row input,
+  .scroll-craft-page .life-exp-before,
+  .scroll-craft-page .life-exp-projected-line > i,
+  .scroll-craft-page .life-exp-after b,
+  .scroll-craft-page .life-exp-after strong {
+    font-size: 13px !important;
+  }
+  .scroll-craft-page .life-exp-level-up,
+  .scroll-craft-page .life-exp-level-up::after {
+    font-size: 10px !important;
+  }
+
+  /* 기타 공통 */
+  .guide-page .guide-intro,
+  .guide-page .integer-stat-note,
+  .guide-page p,
+  .guide-page li,
+  .guide-page td,
+  .guide-page th,
+  .guide-page label,
+  .guide-page input,
+  .guide-page select,
+  .guide-page button {
+    font-size: 14px;
+  }
+  .guide-page small,
+  .guide-page .calendar-sidebar-head small,
+  .guide-page .season-calendar-day > small,
+  .guide-page .season-calendar-day > span,
+  .guide-page .season-calendar-date span {
+    font-size: 12px;
+  }
+  .guide-page .calendar-event,
+  .guide-page .season-calendar-day > b {
+    font-size: 13px;
+  }
+
+  /* 퀘스트 입력표 */
+  .quest-panel-head h2 {
+    font-size: 18px;
+  }
+  .quest-target-input,
+  .quest-target-input input,
+  .quest-table th,
+  .quest-table td,
+  .quest-edit input,
+  .quest-needed-value strong {
+    font-size: 13px;
+  }
+
+  /* 메모·동기화 */
+  #globalMemoText {
+    font-size: 16px;
+  }
+  .global-memo-footer,
+  .cloud-sync-modal label,
+  .cloud-sync-modal input,
+  .cloud-sync-modal button,
+  .cloud-sync-modal p,
+  .cloud-sync-message {
+    font-size: 13px;
+  }
+}
