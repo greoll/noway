@@ -545,16 +545,16 @@
       .join("");
     const materialClassHeads = state.scope === "all" ? classHeads : "";
     document.getElementById("scrollCraftPlanHead").innerHTML = isMobile
-      ? `<tr class="mobile-plan-head"><th scope="col">제작품</th><th scope="col">스크롤<br>개수</th><th scope="col">제작량<br>(가능/필요)</th><th scope="col">필요 재료</th></tr>`
-      : `<tr class="plan-head-group"><th scope="col" rowspan="2">순</th><th scope="col" rowspan="2">생활 구분</th><th scope="col" rowspan="2">제작품</th><th scope="col" rowspan="2" title="스크롤 1장을 사용했을 때 제작되는 개수">스크롤 1장당<br>제작 개수</th><th scope="colgroup" colspan="${indexes.length}" class="scroll-count-head">스크롤 개수</th><th scope="col" rowspan="2">제작량<br>(가능/전체)</th><th scope="col" rowspan="2">총 필요 재료</th></tr><tr class="plan-head-classes">${classHeads}</tr>`;
+      ? `<tr class="mobile-plan-head"><th scope="col">제작품</th><th scope="col">스크롤수</th><th scope="col">제작량</th><th scope="col">필요 재료</th></tr>`
+      : `<tr class="plan-head-group"><th scope="col" rowspan="2">순</th><th scope="col" rowspan="2">생활 구분</th><th scope="col" rowspan="2">제작품</th><th scope="col" rowspan="2" title="스크롤 1장을 사용했을 때 제작되는 개수">스크롤 1장당<br>제작 개수</th><th scope="colgroup" colspan="${indexes.length}" class="scroll-count-head">스크롤</th><th scope="col" rowspan="2">제작량</th><th scope="col" rowspan="2">총 필요 재료</th></tr><tr class="plan-head-classes">${classHeads}</tr>`;
     document.getElementById("scrollCraftMaterialHead").innerHTML =
       `<th scope="colgroup" colspan="2">수급처</th><th scope="col">재료</th><th scope="col" class="input-head">보유량</th><th scope="col">전체 필요</th><th scope="col">상태</th>${materialClassHeads}`;
   }
 
   function renderPlanSort() {
     const options = [
-      ["default", "기본 순서"],
-      ["category", "생활별"],
+      ["default", "기본"],
+      ["category", "생활"],
     ];
     const activeIndexes = activeClassIndexes();
     const hasChangedCraftTargets = plans.some((_, planIndex) =>
@@ -985,9 +985,7 @@
       return;
     }
     if (event.target.closest("[data-scroll-count-add]")) {
-      const addInput = document.querySelector(
-        "[data-scroll-count-add-input]",
-      );
+      const addInput = document.querySelector("[data-scroll-count-add-input]");
       const amount = Math.floor(numericValue(addInput?.value));
       if (amount <= 0) return;
       const classIndexes = activeClassIndexes();
